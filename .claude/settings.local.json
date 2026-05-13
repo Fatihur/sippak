@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(tasklist)",
+      "Bash(curl -sS -i -c /tmp/cookies.txt http://127.0.0.1:8000/pengaduan)",
+      "Bash(curl -sS -b /tmp/cookies.txt http://127.0.0.1:8000/pengaduan)",
+      "Bash(curl -sS -i -b /tmp/cookies.txt -c /tmp/cookies.txt -X POST http://127.0.0.1:8000/pengaduan -F _token=Pj9fSOQiujb6pjOCEPdc52IlyhxXmnBjh0wJOI27 -F 'nama_pelapor=Test User' -F nik_pelapor=520401123456789012 -F jenis_kelamin_pelapor=Perempuan -F nomor_whatsapp=081234567890 -F email_pelapor=test@example.com -F 'alamat_pelapor=Jl. Test No 1 Sumbawa' -F 'nama_korban=Korban Test' -F umur_korban=10 -F jenis_kelamin_korban=Perempuan -F hubungan_dengan_pelapor=Anak -F jenis_kekerasan=KDRT -F lokasi_kejadian=Rumah -F tanggal_kejadian=2026-05-01 -F 'kronologi_kejadian=Kronologi ini panjangnya lebih dari 20 karakter untuk validasi' -F persetujuan=1)",
+      "Bash(curl -sS -i -b /tmp/cookies.txt http://127.0.0.1:8000/pengaduan/9/otp)",
+      "Bash(curl -sS -o /dev/null -w \"vite-status=%{http_code}\\\\n\" --max-time 2 http://127.0.0.1:5173/@vite/client)",
+      "Bash(curl -sS -o /dev/null -w \"vite-ipv6=%{http_code}\\\\n\" --max-time 2 \"http://[::1]:5173/@vite/client\")"
+    ]
+  }
+}
