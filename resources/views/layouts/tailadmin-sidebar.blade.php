@@ -13,7 +13,7 @@
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
             <img src="{{ asset('logo-sumbawa.png') }}" alt="Logo Kabupaten Sumbawa" class="h-10 w-10 shrink-0 rounded-xl object-contain shadow-theme-xs">
             <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="min-w-0">
-                <span class="block text-xl font-bold text-gray-900 dark:text-white">SIPPAK</span>
+                <span class="block text-xl font-bold text-gray-900 dark:text-white">SILAPAK</span>
                 <span class="block text-xs text-gray-500 dark:text-gray-400">Admin Panel PPA</span>
             </span>
         </a>

@@ -9,6 +9,13 @@
     <div class="flex flex-wrap gap-2">
         <span class="badge">{{ $laporan->status_label }}</span>
         <span class="urgency urgency-{{ $laporan->tingkat_urgensi }}">Urgensi {{ ucfirst($laporan->tingkat_urgensi) }}</span>
+        @if(auth()->user()->role === 'operator')
+            <a href="{{ route('admin.laporan.edit', $laporan) }}" class="btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
+            <form method="POST" action="{{ route('admin.laporan.destroy', $laporan) }}" onsubmit="return confirm('Hapus tiket {{ $laporan->nomor_tiket }}? Data tidak bisa dikembalikan.')">
+                @csrf @method('DELETE')
+                <button class="btn-danger" type="submit"><i class="fa-solid fa-trash"></i> Hapus</button>
+            </form>
+        @endif
     </div>
 </div>
 
@@ -34,9 +41,29 @@
 
         <section class="panel">
             <div class="panel-header"><div><h3 class="panel-title">Bukti Pendukung</h3><p class="panel-subtitle">File tersimpan private dan hanya dapat diakses setelah login.</p></div></div>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 @forelse($laporan->bukti as $bukti)
-                    <a class="file-item" href="{{ route('admin.bukti.unduh',$bukti->id) }}"><span><i class="fa-solid fa-file-arrow-down"></i></span><div><strong>{{ $bukti->nama_asli }}</strong><small>{{ number_format($bukti->ukuran_file / 1024, 1) }} KB</small></div></a>
+                    @php
+                        $isImage = str_starts_with((string) $bukti->mime_type, 'image/');
+                        $isPdf = $bukti->mime_type === 'application/pdf';
+                    @endphp
+                    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+                        @if($isImage)
+                            <a href="{{ route('admin.bukti.preview',$bukti->id) }}" target="_blank"><img src="{{ route('admin.bukti.preview',$bukti->id) }}" alt="{{ $bukti->nama_asli }}" class="h-44 w-full object-cover"></a>
+                        @elseif($isPdf)
+                            <iframe src="{{ route('admin.bukti.preview',$bukti->id) }}" class="h-44 w-full bg-gray-50 dark:bg-gray-900"></iframe>
+                        @else
+                            <div class="grid h-44 place-items-center bg-gray-50 text-5xl text-brand-500 dark:bg-gray-900"><i class="fa-solid fa-file-word"></i></div>
+                        @endif
+                        <div class="p-4">
+                            <strong class="block truncate text-sm text-gray-800 dark:text-white/90">{{ $bukti->nama_asli }}</strong>
+                            <small class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ number_format($bukti->ukuran_file / 1024, 1) }} KB</small>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                @if($isImage || $isPdf)<a class="table-action" href="{{ route('admin.bukti.preview',$bukti->id) }}" target="_blank">Preview</a>@endif
+                                <a class="table-action" href="{{ route('admin.bukti.unduh',$bukti->id) }}">Unduh</a>
+                            </div>
+                        </div>
+                    </div>
                 @empty
                     <div class="empty-state sm:col-span-2">Tidak ada bukti pendukung.</div>
                 @endforelse
@@ -72,6 +99,16 @@
                     <div><label class="label">Tingkat Urgensi</label><select name="tingkat_urgensi" class="input">@foreach(['tinggi','sedang','rendah'] as $u)<option value="{{ $u }}" @selected($laporan->tingkat_urgensi===$u)>{{ ucfirst($u) }}</option>@endforeach</select></div>
                     <div><label class="label">Catatan Umum</label><textarea name="catatan" class="input" rows="4" placeholder="Tulis catatan untuk pelapor"></textarea></div>
                     <button class="btn-primary w-full"><i class="fa-solid fa-floppy-disk"></i> Simpan Status</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h3 class="panel-title">Panggil Pelapor ke Kantor</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Kirim email/WhatsApp agar pelapor segera datang ke kantor saat kasus mulai diproses.</p>
+                <form method="POST" action="{{ route('admin.laporan.panggil-kantor', $laporan) }}" class="mt-4 space-y-4">
+                    @csrf
+                    <div><label class="label">Catatan Tambahan</label><textarea name="catatan_panggilan" class="input" rows="3" placeholder="Contoh: Mohon datang Senin pukul 09.00 membawa identitas."></textarea></div>
+                    <button class="btn-primary w-full"><i class="fa-solid fa-paper-plane"></i> Kirim Panggilan</button>
                 </form>
             </section>
 

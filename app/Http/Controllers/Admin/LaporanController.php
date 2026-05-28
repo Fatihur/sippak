@@ -12,7 +12,9 @@ use App\Services\NotifikasiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanController extends Controller
@@ -51,6 +53,50 @@ class LaporanController extends Controller
         $laporan->load(['bukti', 'riwayatStatus.user', 'asesmenAwal', 'operator']);
 
         return view('admin.laporan.show', compact('laporan'));
+    }
+
+    public function edit(Pengaduan $laporan): View
+    {
+        return view('admin.laporan.edit', [
+            'laporan' => $laporan,
+            'opsiKecamatan' => $this->opsiKecamatan(),
+            'opsiJenisKasus' => $this->opsiJenisKasus(),
+        ]);
+    }
+
+    public function update(Request $request, Pengaduan $laporan): RedirectResponse
+    {
+        $data = $request->validate([
+            'nama_pelapor' => ['required', 'string', 'max:255'],
+            'nik_pelapor' => ['required', 'digits_between:12,20'],
+            'jenis_kelamin_pelapor' => ['required', Rule::in(['Laki-laki', 'Perempuan'])],
+            'nomor_whatsapp' => ['required', 'string', 'max:30'],
+            'email_pelapor' => ['nullable', 'email', 'max:255'],
+            'alamat_pelapor' => ['required', 'string'],
+            'kecamatan' => ['nullable', 'string', 'max:120', Rule::in(config('sippak.kecamatan', []))],
+            'nama_korban' => ['required', 'string', 'max:255'],
+            'umur_korban' => ['required', 'integer', 'min:0', 'max:120'],
+            'jenis_kelamin_korban' => ['required', Rule::in(['Laki-laki', 'Perempuan'])],
+            'hubungan_dengan_pelapor' => ['required', 'string', 'max:120'],
+            'jenis_kekerasan' => ['required', 'string', 'max:120'],
+            'lokasi_kejadian' => ['required', 'string', 'max:255'],
+            'tanggal_kejadian' => ['required', 'date', 'before_or_equal:today'],
+            'kronologi_kejadian' => ['required', 'string', 'min:20'],
+        ]);
+
+        $laporan->update($data);
+        $this->logAktivitasService->catat('laporan_diedit', 'Nomor tiket: '.$laporan->nomor_tiket);
+
+        return redirect()->route('admin.laporan.show', $laporan)->with('success', 'Data tiket berhasil diperbarui.');
+    }
+
+    public function destroy(Pengaduan $laporan): RedirectResponse
+    {
+        $nomorTiket = $laporan->nomor_tiket;
+        $laporan->delete();
+        $this->logAktivitasService->catat('laporan_dihapus', 'Nomor tiket: '.$nomorTiket);
+
+        return redirect()->route('admin.laporan.index')->with('success', 'Tiket laporan berhasil dihapus.');
     }
 
     public function updateStatus(Request $request, Pengaduan $laporan): RedirectResponse
@@ -109,11 +155,34 @@ class LaporanController extends Controller
         return back()->with('success', 'Asesmen awal berhasil disimpan dan notifikasi dikirim.');
     }
 
+    public function panggilKeKantor(Request $request, Pengaduan $laporan): RedirectResponse
+    {
+        $data = $request->validate([
+            'catatan_panggilan' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->notifikasiService->panggilKeKantor($laporan, $data['catatan_panggilan'] ?? null);
+        $this->logAktivitasService->catat('panggilan_kantor_dikirim', 'Nomor tiket: '.$laporan->nomor_tiket);
+
+        return back()->with('success', 'Notifikasi panggilan ke kantor berhasil diproses.');
+    }
+
     public function unduhBukti(int $id): StreamedResponse
     {
         $bukti = BuktiPengaduan::findOrFail($id);
 
         return Storage::download($bukti->path_file, $bukti->nama_asli);
+    }
+
+    public function previewBukti(int $id): BinaryFileResponse
+    {
+        $bukti = BuktiPengaduan::findOrFail($id);
+        abort_unless(Storage::exists($bukti->path_file), 404);
+
+        return response()->file(Storage::path($bukti->path_file), [
+            'Content-Type' => $bukti->mime_type ?: 'application/octet-stream',
+            'Content-Disposition' => 'inline; filename="'.addslashes($bukti->nama_asli).'"',
+        ]);
     }
 
     private function opsiJenisKasus(): array

@@ -54,7 +54,7 @@ async function startSocket() {
             auth: state,
             logger,
             printQRInTerminal: false,
-            browser: ['SIPPAK', 'Chrome', '1.0.0'],
+            browser: ['SILAPAK', 'Chrome', '1.0.0'],
         });
 
         sock.ev.on('creds.update', saveCreds);
@@ -92,7 +92,7 @@ async function startSocket() {
 }
 
 app.get('/health', (req, res) => {
-    res.json({ success: true, service: 'sippak-wa-gateway', status: connectionStatus });
+    res.json({ success: true, service: 'silapak-wa-gateway', status: connectionStatus });
 });
 
 app.get('/status', requireToken, (req, res) => {
@@ -154,6 +154,6 @@ app.post('/logout', requireToken, async (req, res) => {
 });
 
 app.listen(port, async () => {
-    console.log(`SIPPAK WhatsApp Gateway running on http://127.0.0.1:${port}`);
+    console.log(`SILAPAK WhatsApp Gateway running on http://127.0.0.1:${port}`);
     await startSocket();
 });

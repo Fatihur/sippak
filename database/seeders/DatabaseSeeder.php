@@ -13,17 +13,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'operator@sippak.test'],
+            ['email' => 'operator@silapak.test'],
             ['name' => 'Operator PPA', 'password' => 'password', 'role' => 'operator', 'aktif' => true]
         );
 
         User::updateOrCreate(
-            ['email' => 'kabid@sippak.test'],
+            ['email' => 'kabid@silapak.test'],
             ['name' => 'Kepala Bidang PPA', 'password' => 'password', 'role' => 'kepala_bidang', 'aktif' => true]
         );
 
         User::updateOrCreate(
-            ['email' => 'kadis@sippak.test'],
+            ['email' => 'kadis@silapak.test'],
             ['name' => 'Kepala Dinas', 'password' => 'password', 'role' => 'kepala_dinas', 'aktif' => true]
         );
     }

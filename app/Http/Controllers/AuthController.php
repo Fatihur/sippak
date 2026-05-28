@@ -6,7 +6,9 @@ use App\Services\LogAktivitasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -18,6 +20,11 @@ class AuthController extends Controller
     public function tampilLogin(): View
     {
         return view('auth.login');
+    }
+
+    public function redirectSetelahLogin(): RedirectResponse
+    {
+        return redirect()->route('admin.dashboard');
     }
 
     public function login(Request $request): RedirectResponse
@@ -60,9 +67,22 @@ class AuthController extends Controller
         $request->validate(['email' => ['required', 'email']]);
         $status = Password::sendResetLink($request->only('email'));
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('success', __($status))
-            : back()->withErrors(['email' => __($status)]);
+        if ($status === Password::RESET_LINK_SENT) {
+            return back()->with('success', 'Link reset password sudah dikirim ke email petugas. Silakan cek inbox/spam.');
+        }
+
+        if (app()->environment(['local', 'testing'])) {
+            $user = config('auth.providers.users.model')::where('email', $request->email)->first();
+            if ($user) {
+                $token = Password::createToken($user);
+
+                return back()
+                    ->with('success', 'Mode lokal: email reset belum terkirim melalui SMTP. Gunakan link demo di bawah ini untuk reset password.')
+                    ->with('reset_link_demo', route('password.reset', ['token' => $token, 'email' => $user->email]));
+            }
+        }
+
+        return back()->withErrors(['email' => __($status)]);
     }
 
     public function tampilResetPassword(Request $request, string $token): View
@@ -79,7 +99,10 @@ class AuthController extends Controller
         ]);
 
         $status = Password::reset($request->only('email', 'password', 'password_confirmation', 'token'), function ($user, string $password): void {
-            $user->forceFill(['password' => $password])->save();
+            $user->forceFill([
+                'password' => Hash::make($password),
+                'remember_token' => Str::random(60),
+            ])->save();
         });
 
         return $status === Password::PASSWORD_RESET

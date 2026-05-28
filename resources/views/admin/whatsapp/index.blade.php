@@ -6,7 +6,7 @@
         <div class="panel-header">
             <div>
                 <h2 class="panel-title">Koneksi WhatsApp Gateway</h2>
-                <p class="panel-subtitle">Hubungkan SIPPAK dengan WhatsApp melalui Baileys gateway.</p>
+                <p class="panel-subtitle">Hubungkan SILAPAK dengan WhatsApp melalui Baileys gateway.</p>
             </div>
             <span class="badge">{{ $status['status'] ?? 'unknown' }}</span>
         </div>
@@ -58,7 +58,7 @@
             <form method="POST" action="{{ route('admin.whatsapp.test') }}" class="mt-5 space-y-4">
                 @csrf
                 <div><label class="label">Nomor Tujuan</label><input class="input" name="nomor_tujuan" placeholder="081234567890" required></div>
-                <div><label class="label">Pesan</label><textarea class="input" name="pesan_test" rows="4" required>Test pesan dari SIPPAK WhatsApp Gateway.</textarea></div>
+                <div><label class="label">Pesan</label><textarea class="input" name="pesan_test" rows="4" required>Test pesan dari SILAPAK WhatsApp Gateway.</textarea></div>
                 <button class="btn-primary w-full"><i class="fa-brands fa-whatsapp"></i> Kirim Test</button>
             </form>
         </section>

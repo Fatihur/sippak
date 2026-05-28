@@ -26,6 +26,8 @@ Route::get('/tracking', [PengaduanController::class, 'formTracking'])->name('tra
 Route::post('/tracking', [PengaduanController::class, 'tracking'])->name('tracking.hasil');
 Route::get('/tracking/{nomor_tiket}', [PengaduanController::class, 'trackingPublik'])->name('tracking.publik');
 
+Route::middleware('auth')->get('/admin', [AuthController::class, 'redirectSetelahLogin'])->name('admin.home');
+
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'tampilLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.proses');
@@ -41,9 +43,14 @@ Route::middleware(['auth', 'role:operator,kepala_bidang,kepala_dinas'])->prefix(
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/{laporan}', [LaporanController::class, 'show'])->name('laporan.show');
+    Route::get('/laporan/{laporan}/edit', [LaporanController::class, 'edit'])->middleware('role:operator')->name('laporan.edit');
+    Route::put('/laporan/{laporan}', [LaporanController::class, 'update'])->middleware('role:operator')->name('laporan.update');
+    Route::delete('/laporan/{laporan}', [LaporanController::class, 'destroy'])->middleware('role:operator')->name('laporan.destroy');
     Route::patch('/laporan/{laporan}/status', [LaporanController::class, 'updateStatus'])->middleware('role:operator')->name('laporan.status');
     Route::post('/laporan/{laporan}/asesmen', [LaporanController::class, 'simpanAsesmen'])->middleware('role:operator')->name('laporan.asesmen');
+    Route::post('/laporan/{laporan}/panggil-kantor', [LaporanController::class, 'panggilKeKantor'])->middleware('role:operator')->name('laporan.panggil-kantor');
     Route::get('/bukti/{id}', [LaporanController::class, 'unduhBukti'])->name('bukti.unduh');
+    Route::get('/bukti/{id}/preview', [LaporanController::class, 'previewBukti'])->name('bukti.preview');
     Route::get('/rekap', [RekapController::class, 'index'])->name('rekap.index');
     Route::get('/rekap/export-csv', [RekapController::class, 'exportCsv'])->name('rekap.export-csv');
     Route::get('/rekap/export-pdf', [RekapController::class, 'exportPdf'])->name('rekap.export-pdf');

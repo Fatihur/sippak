@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 @section('title','Laporan Pengaduan')
 @section('content')
+@if(auth()->user()->role === 'operator')
 <section class="panel mb-6">
     <div class="panel-header">
         <div>
@@ -18,6 +19,7 @@
         <div class="flex items-end"><button class="btn-primary w-full"><i class="fa-solid fa-filter"></i> Terapkan</button></div>
     </form>
 </section>
+@endif
 
 <section class="panel">
     <div class="panel-header">
@@ -40,7 +42,18 @@
                         <td>{{ $item->kecamatan ?: '-' }}</td>
                         <td><span class="badge">{{ $item->status_label }}</span></td>
                         <td><span class="urgency urgency-{{ $item->tingkat_urgensi }}">{{ ucfirst($item->tingkat_urgensi) }}</span></td>
-                        <td class="text-right"><a class="table-action" href="{{ route('admin.laporan.show',$item) }}">Detail</a></td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-1">
+                                <a class="table-action" href="{{ route('admin.laporan.show',$item) }}">Detail</a>
+                                @if(auth()->user()->role === 'operator')
+                                    <a class="table-action" href="{{ route('admin.laporan.edit',$item) }}">Edit</a>
+                                    <form method="POST" action="{{ route('admin.laporan.destroy',$item) }}" onsubmit="return confirm('Hapus tiket {{ $item->nomor_tiket }}? Data tidak bisa dikembalikan.')">
+                                        @csrf @method('DELETE')
+                                        <button class="table-action text-error-600 hover:bg-error-50 dark:hover:bg-error-500/10" type="submit">Hapus</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="8" class="py-10 text-center text-gray-500 dark:text-gray-400">Belum ada laporan sesuai filter.</td></tr>

@@ -40,7 +40,8 @@ class SippakFeatureTest extends TestCase
         $response = $this->post(route('pengaduan.simpan'), $this->dataPengaduan());
 
         $pengaduan = Pengaduan::firstOrFail();
-        $response->assertOk()->assertSee('Verifikasi OTP');
+        $response->assertRedirect(route('pengaduan.otp', $pengaduan));
+        $this->get(route('pengaduan.otp', $pengaduan))->assertOk()->assertSee('Verifikasi OTP');
 
         $otp = session('otp_demo_'.$pengaduan->id);
         $this->assertNotEmpty($otp);
