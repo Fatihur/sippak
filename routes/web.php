@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\RekapController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PengaduanController;
+use App\Http\Controllers\PublicAiChatController;
 use App\Http\Controllers\PublicPageController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,7 @@ Route::get('/tentang', [PublicPageController::class, 'tentang'])->name('tentang'
 Route::get('/faq', [PublicPageController::class, 'faq'])->name('faq');
 Route::get('/statistik', [PublicPageController::class, 'statistik'])->name('statistik');
 Route::get('/edukasi', [PublicPageController::class, 'edukasi'])->name('edukasi');
+Route::post('/ai/chat', PublicAiChatController::class)->name('ai.chat');
 Route::get('/pengaduan', [PengaduanController::class, 'buat'])->name('pengaduan.buat');
 Route::post('/pengaduan', [PengaduanController::class, 'simpan'])->name('pengaduan.simpan');
 Route::get('/pengaduan/{pengaduan}/otp', [PengaduanController::class, 'tampilOtp'])->name('pengaduan.otp');

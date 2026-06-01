@@ -40,4 +40,10 @@ return [
         'token' => env('WHATSAPP_GATEWAY_TOKEN'),
     ],
 
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'llama-3.1-8b-instant'),
+        'timeout' => env('GROQ_TIMEOUT', 20),
+    ],
+
 ];

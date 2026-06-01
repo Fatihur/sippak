@@ -40,5 +40,7 @@
         @if($errors->any())<div class="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8"><div class="alert-danger"><ul class="list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div></div>@endif
         @yield('content')
     </main>
+
+    <x-public-ai-chat />
 </body>
 </html>
