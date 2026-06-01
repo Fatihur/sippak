@@ -86,6 +86,114 @@ class SippakFeatureTest extends TestCase
         $this->assertSame(1, $pengaduan->riwayatStatus()->count());
     }
 
+    public function test_label_role_user_sesuai_aktor_internal(): void
+    {
+        $this->assertSame('Admin/Operator', User::roleLabel('operator'));
+        $this->assertSame('Kabid PPA', User::roleLabel('kepala_bidang'));
+        $this->assertSame('Kepala Dinas P2KBP3A', User::roleLabel('kepala_dinas'));
+        $this->assertSame('Role Tidak Dikenal', User::roleLabel('pelapor'));
+        $this->assertSame([
+            'operator' => 'Admin/Operator',
+            'kepala_bidang' => 'Kabid PPA',
+            'kepala_dinas' => 'Kepala Dinas P2KBP3A',
+        ], User::opsiRole());
+    }
+
+    public function test_kabid_dan_kepala_dinas_dapat_memonitor_laporan_tanpa_aksi_operasional(): void
+    {
+        $pengaduan = Pengaduan::create($this->dataPengaduan([
+            'nomor_tiket' => 'PPA-2026-0003',
+            'status' => 'diterima',
+        ]));
+
+        foreach (['kepala_bidang', 'kepala_dinas'] as $role) {
+            $user = User::factory()->create(['role' => $role, 'aktif' => true]);
+
+            $this->actingAs($user)
+                ->get(route('admin.dashboard'))
+                ->assertOk();
+
+            $this->actingAs($user)
+                ->get(route('admin.laporan.index'))
+                ->assertOk()
+                ->assertSee($pengaduan->nomor_tiket)
+                ->assertDontSee('Edit')
+                ->assertDontSee('Hapus');
+
+            $this->actingAs($user)
+                ->get(route('admin.laporan.show', $pengaduan))
+                ->assertOk()
+                ->assertSee('Mode Monitoring')
+                ->assertDontSee('Simpan Status')
+                ->assertDontSee('Simpan Asesmen')
+                ->assertDontSee('Kirim Panggilan');
+
+            $this->actingAs($user)
+                ->get(route('admin.rekap.index'))
+                ->assertOk()
+                ->assertSee('Export PDF / Cetak')
+                ->assertDontSee('Export Excel/CSV')
+                ->assertDontSee('Backup Database');
+        }
+    }
+
+    public function test_kabid_dan_kepala_dinas_tidak_dapat_melakukan_aksi_operasional(): void
+    {
+        $pengaduan = Pengaduan::create($this->dataPengaduan([
+            'nomor_tiket' => 'PPA-2026-0004',
+            'status' => 'menunggu_verifikasi',
+        ]));
+
+        foreach (['kepala_bidang', 'kepala_dinas'] as $role) {
+            $user = User::factory()->create(['role' => $role, 'aktif' => true]);
+
+            $this->actingAs($user)
+                ->patch(route('admin.laporan.status', $pengaduan), [
+                    'status' => 'diterima',
+                    'tingkat_urgensi' => 'tinggi',
+                    'catatan' => 'Tidak boleh berubah oleh role monitoring.',
+                ])
+                ->assertForbidden();
+
+            $this->actingAs($user)
+                ->get(route('admin.pengguna.index'))
+                ->assertForbidden();
+
+            $this->actingAs($user)
+                ->get(route('admin.whatsapp.index'))
+                ->assertForbidden();
+
+            $this->actingAs($user)
+                ->get(route('admin.rekap.export-csv'))
+                ->assertForbidden();
+
+            $this->actingAs($user)
+                ->get(route('admin.backup.sqlite'))
+                ->assertForbidden();
+        }
+
+        $pengaduan->refresh();
+        $this->assertSame('menunggu_verifikasi', $pengaduan->status);
+        $this->assertSame(0, $pengaduan->riwayatStatus()->count());
+    }
+
+    public function test_pelapor_tidak_memiliki_akses_login_admin(): void
+    {
+        $pelapor = User::factory()->create([
+            'email' => 'pelapor-test@sippak.test',
+            'password' => 'password',
+            'role' => 'pelapor',
+            'aktif' => true,
+        ]);
+
+        $this->post(route('login.proses'), [
+            'email' => $pelapor->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
     private function dataPengaduan(array $override = []): array
     {
         return array_merge([

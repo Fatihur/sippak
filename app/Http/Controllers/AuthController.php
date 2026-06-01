@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\LogAktivitasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,8 +38,18 @@ class AuthController extends Controller
         $ingat = $request->boolean('remember');
 
         if (Auth::attempt($credentials + ['aktif' => true], $ingat)) {
+            $user = $request->user();
+
+            if (! array_key_exists($user->role, User::opsiRole())) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors(['email' => 'Email atau password tidak sesuai, atau akun tidak aktif.'])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
-            $request->user()->update(['terakhir_login_at' => now()]);
+            $user->update(['terakhir_login_at' => now()]);
             $this->logAktivitasService->catat('login', 'Petugas masuk ke sistem.');
 
             return redirect()->intended(route('admin.dashboard'))->with('success', 'Berhasil masuk.');

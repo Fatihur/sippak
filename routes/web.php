@@ -52,7 +52,7 @@ Route::middleware(['auth', 'role:operator,kepala_bidang,kepala_dinas'])->prefix(
     Route::get('/bukti/{id}', [LaporanController::class, 'unduhBukti'])->name('bukti.unduh');
     Route::get('/bukti/{id}/preview', [LaporanController::class, 'previewBukti'])->name('bukti.preview');
     Route::get('/rekap', [RekapController::class, 'index'])->name('rekap.index');
-    Route::get('/rekap/export-csv', [RekapController::class, 'exportCsv'])->name('rekap.export-csv');
+    Route::get('/rekap/export-csv', [RekapController::class, 'exportCsv'])->middleware('role:operator')->name('rekap.export-csv');
     Route::get('/rekap/export-pdf', [RekapController::class, 'exportPdf'])->name('rekap.export-pdf');
     Route::get('/backup/sqlite', [BackupController::class, 'exportSqlite'])->middleware('role:operator')->name('backup.sqlite');
     Route::get('/whatsapp', [WhatsAppController::class, 'index'])->middleware('role:operator')->name('whatsapp.index');

@@ -32,7 +32,7 @@ class DashboardController extends Controller
         $terbaru = Pengaduan::latest()->whereNotNull('nomor_tiket')->limit(8)->get();
         $dashboardMeta = match ($role) {
             'kepala_dinas' => [
-                'label' => 'Dashboard Kepala Dinas',
+                'label' => 'Dashboard Kepala Dinas P2KBP3A',
                 'subtitle' => 'Pantauan eksekutif laporan PPA, tren kasus, dan rekap wilayah.',
                 'gradient' => 'from-violet-600 via-fuchsia-600 to-rose-500',
                 'accent' => 'violet',

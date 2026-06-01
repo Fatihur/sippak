@@ -36,30 +36,32 @@
                 <i class="fa-solid fa-sun dark:hidden"></i>
             </button>
 
-            <div class="relative" x-data="{ open: false }" x-init="setInterval(() => { fetch('{{ route('admin.dashboard') }}', {headers:{'X-Requested-With':'XMLHttpRequest'}}).catch(() => {}) }, 60000)">
-                <button type="button" @click="open = !open" class="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800">
-                    <i class="fa-solid fa-bell"></i>
-                    @if(($notifikasiAdmin['jumlah'] ?? 0) > 0)<span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-error-500 px-1 text-xs font-bold text-white">{{ $notifikasiAdmin['jumlah'] }}</span>@endif
-                </button>
-                <div x-show="open" @click.outside="open=false" x-cloak class="absolute right-0 mt-3 w-80 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
-                    <div class="flex items-center justify-between"><h3 class="font-semibold text-gray-800 dark:text-white/90">Notifikasi Admin</h3><span class="badge">{{ $notifikasiAdmin['jumlah'] ?? 0 }} baru</span></div>
-                    <div class="mt-3 space-y-2">
-                        @forelse(($notifikasiAdmin['baru'] ?? collect()) as $notif)
-                            <a href="{{ route('admin.laporan.show', $notif) }}" class="block rounded-xl border border-gray-100 p-3 text-sm hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.03]">
-                                <strong class="block text-gray-800 dark:text-white/90">{{ $notif->nomor_tiket }}</strong>
-                                <span class="text-gray-500 dark:text-gray-400">{{ $notif->jenis_kekerasan }} • {{ $notif->created_at->diffForHumans() }}</span>
-                            </a>
-                        @empty
-                            <div class="empty-state">Belum ada laporan baru.</div>
-                        @endforelse
+            @if(auth()->user()->role === \App\Models\User::ROLE_OPERATOR)
+                <div class="relative" x-data="{ open: false }" x-init="setInterval(() => { fetch('{{ route('admin.dashboard') }}', {headers:{'X-Requested-With':'XMLHttpRequest'}}).catch(() => {}) }, 60000)">
+                    <button type="button" @click="open = !open" class="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800">
+                        <i class="fa-solid fa-bell"></i>
+                        @if(($notifikasiAdmin['jumlah'] ?? 0) > 0)<span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-error-500 px-1 text-xs font-bold text-white">{{ $notifikasiAdmin['jumlah'] }}</span>@endif
+                    </button>
+                    <div x-show="open" @click.outside="open=false" x-cloak class="absolute right-0 mt-3 w-80 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
+                        <div class="flex items-center justify-between"><h3 class="font-semibold text-gray-800 dark:text-white/90">Notifikasi Admin</h3><span class="badge">{{ $notifikasiAdmin['jumlah'] ?? 0 }} baru</span></div>
+                        <div class="mt-3 space-y-2">
+                            @forelse(($notifikasiAdmin['baru'] ?? collect()) as $notif)
+                                <a href="{{ route('admin.laporan.show', $notif) }}" class="block rounded-xl border border-gray-100 p-3 text-sm hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.03]">
+                                    <strong class="block text-gray-800 dark:text-white/90">{{ $notif->nomor_tiket }}</strong>
+                                    <span class="text-gray-500 dark:text-gray-400">{{ $notif->jenis_kekerasan }} • {{ $notif->created_at->diffForHumans() }}</span>
+                                </a>
+                            @empty
+                                <div class="empty-state">Belum ada laporan baru.</div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
             <div class="flex items-center gap-3">
                 <div class="hidden text-right sm:block">
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ auth()->user()->name }}</p>
-                    <p class="text-xs capitalize text-gray-500 dark:text-gray-400">{{ str_replace('_', ' ', auth()->user()->role) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ auth()->user()->labelRole() }}</p>
                 </div>
                 <div class="grid h-11 w-11 place-items-center rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                     <i class="fa-solid fa-user"></i>

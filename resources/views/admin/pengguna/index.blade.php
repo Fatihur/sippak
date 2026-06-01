@@ -5,7 +5,7 @@
     <div class="panel-header">
         <div>
             <h2 class="panel-title">Daftar Pengguna</h2>
-            <p class="panel-subtitle">Kelola petugas operator, kepala bidang, dan kepala dinas.</p>
+            <p class="panel-subtitle">Kelola akun Admin/Operator, Kabid PPA, dan Kepala Dinas P2KBP3A.</p>
         </div>
         <a class="btn-primary" href="{{ route('admin.pengguna.create') }}"><i class="fa-solid fa-user-plus"></i> Tambah Pengguna</a>
     </div>
@@ -18,7 +18,7 @@
                         <tr>
                             <td class="font-medium text-gray-800 dark:text-white/90">{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
-                            <td class="capitalize">{{ str_replace('_',' ',$user->role) }}</td>
+                            <td>{{ $user->labelRole() }}</td>
                             <td><span class="badge">{{ $user->aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                             <td>
                                 <div class="flex justify-end gap-2">

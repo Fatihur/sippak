@@ -14,7 +14,7 @@
             <img src="{{ asset('logo-sumbawa.png') }}" alt="Logo Kabupaten Sumbawa" class="h-10 w-10 shrink-0 rounded-xl object-contain shadow-theme-xs">
             <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="min-w-0">
                 <span class="block text-xl font-bold text-gray-900 dark:text-white">SILAPAK</span>
-                <span class="block text-xs text-gray-500 dark:text-gray-400">Admin Panel PPA</span>
+                <span class="block text-xs text-gray-500 dark:text-gray-400">Panel {{ auth()->user()->labelRole() }}</span>
             </span>
         </a>
     </div>
@@ -47,10 +47,10 @@
                             <a href="{{ route('admin.rekap.index') }}" class="menu-item group {{ request()->routeIs('admin.rekap.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                 :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
                                 <span class="{{ request()->routeIs('admin.rekap.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-chart-column text-xl"></i></span>
-                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">Rekap & Export</span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">Rekap & Statistik</span>
                             </a>
                         </li>
-                        @if(auth()->user()->role === 'operator')
+                        @if(auth()->user()->role === \App\Models\User::ROLE_OPERATOR)
                             <li>
                                 <a href="{{ route('admin.pengguna.index') }}" class="menu-item group {{ request()->routeIs('admin.pengguna.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                     :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
