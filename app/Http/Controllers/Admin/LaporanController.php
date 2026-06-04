@@ -167,6 +167,25 @@ class LaporanController extends Controller
         return back()->with('success', 'Notifikasi panggilan ke kantor berhasil diproses.');
     }
 
+    public function simpanTindakLanjutKabid(Request $request, Pengaduan $laporan): RedirectResponse
+    {
+        abort_unless($request->user()?->canGiveTindakLanjut(), 403);
+
+        $data = $request->validate([
+            'catatan_tindak_lanjut' => ['required', 'string', 'max:2000'],
+        ]);
+
+        RiwayatStatusPengaduan::create([
+            'pengaduan_id' => $laporan->id,
+            'status' => $laporan->status,
+            'catatan' => 'Catatan Kabid PPA: '.$data['catatan_tindak_lanjut'],
+            'user_id' => $request->user()->id,
+        ]);
+        $this->logAktivitasService->catat('catatan_kabid_disimpan', 'Nomor tiket: '.$laporan->nomor_tiket);
+
+        return back()->with('success', 'Catatan tindak lanjut Kabid PPA berhasil disimpan.');
+    }
+
     public function unduhBukti(int $id): StreamedResponse
     {
         $bukti = BuktiPengaduan::findOrFail($id);

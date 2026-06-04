@@ -51,11 +51,12 @@ Route::middleware(['auth', 'role:operator,kepala_bidang,kepala_dinas'])->prefix(
     Route::patch('/laporan/{laporan}/status', [LaporanController::class, 'updateStatus'])->middleware('role:operator')->name('laporan.status');
     Route::post('/laporan/{laporan}/asesmen', [LaporanController::class, 'simpanAsesmen'])->middleware('role:operator')->name('laporan.asesmen');
     Route::post('/laporan/{laporan}/panggil-kantor', [LaporanController::class, 'panggilKeKantor'])->middleware('role:operator')->name('laporan.panggil-kantor');
+    Route::post('/laporan/{laporan}/tindak-lanjut-kabid', [LaporanController::class, 'simpanTindakLanjutKabid'])->middleware('role:kepala_bidang')->name('laporan.tindak-lanjut-kabid');
     Route::get('/bukti/{id}', [LaporanController::class, 'unduhBukti'])->name('bukti.unduh');
     Route::get('/bukti/{id}/preview', [LaporanController::class, 'previewBukti'])->name('bukti.preview');
     Route::get('/rekap', [RekapController::class, 'index'])->name('rekap.index');
     Route::get('/rekap/export-csv', [RekapController::class, 'exportCsv'])->middleware('role:operator')->name('rekap.export-csv');
-    Route::get('/rekap/export-pdf', [RekapController::class, 'exportPdf'])->name('rekap.export-pdf');
+    Route::get('/rekap/export-pdf', [RekapController::class, 'exportPdf'])->middleware('role:operator,kepala_dinas')->name('rekap.export-pdf');
     Route::get('/backup/sqlite', [BackupController::class, 'exportSqlite'])->middleware('role:operator')->name('backup.sqlite');
     Route::get('/whatsapp', [WhatsAppController::class, 'index'])->middleware('role:operator')->name('whatsapp.index');
     Route::post('/whatsapp', [WhatsAppController::class, 'simpan'])->middleware('role:operator')->name('whatsapp.simpan');

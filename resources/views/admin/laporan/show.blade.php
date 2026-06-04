@@ -9,7 +9,7 @@
     <div class="flex flex-wrap gap-2">
         <span class="badge">{{ $laporan->status_label }}</span>
         <span class="urgency urgency-{{ $laporan->tingkat_urgensi }}">Urgensi {{ ucfirst($laporan->tingkat_urgensi) }}</span>
-        @if(auth()->user()->role === 'operator')
+        @if(auth()->user()->canManageLaporan())
             <a href="{{ route('admin.laporan.edit', $laporan) }}" class="btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
             <form method="POST" action="{{ route('admin.laporan.destroy', $laporan) }}" onsubmit="return confirm('Hapus tiket {{ $laporan->nomor_tiket }}? Data tidak bisa dikembalikan.')">
                 @csrf @method('DELETE')
@@ -90,7 +90,7 @@
     </div>
 
     <aside class="space-y-6">
-        @if(auth()->user()->role === 'operator')
+        @if(auth()->user()->canManageLaporan())
             <section class="panel">
                 <h3 class="panel-title">Update Status</h3>
                 <form method="POST" action="{{ route('admin.laporan.status',$laporan) }}" class="mt-4 space-y-4">
@@ -123,6 +123,16 @@
                     <label class="check-row"><input type="checkbox" name="pendampingan_psikologis" value="1" @checked($laporan->asesmenAwal?->pendampingan_psikologis)> Pendampingan psikologis</label>
                     <div><label class="label">Catatan Operator</label><textarea name="catatan_operator" class="input" rows="3">{{ $laporan->asesmenAwal?->catatan_operator }}</textarea></div>
                     <button class="btn-primary w-full"><i class="fa-solid fa-floppy-disk"></i> Simpan Asesmen</button>
+                </form>
+            </section>
+        @elseif(auth()->user()->canGiveTindakLanjut())
+            <section class="panel">
+                <h3 class="panel-title">Catatan / Tindak Lanjut Kabid</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Berikan arahan pengawasan kepada petugas tanpa mengubah status resmi laporan.</p>
+                <form method="POST" action="{{ route('admin.laporan.tindak-lanjut-kabid', $laporan) }}" class="mt-4 space-y-4">
+                    @csrf
+                    <div><label class="label">Catatan Tindak Lanjut</label><textarea name="catatan_tindak_lanjut" class="input" rows="4" required placeholder="Tulis arahan atau catatan untuk tindak lanjut petugas."></textarea></div>
+                    <button class="btn-primary w-full"><i class="fa-solid fa-comment-dots"></i> Simpan Catatan</button>
                 </form>
             </section>
         @else

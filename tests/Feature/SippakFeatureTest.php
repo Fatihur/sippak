@@ -120,21 +120,82 @@ class SippakFeatureTest extends TestCase
                 ->assertDontSee('Edit')
                 ->assertDontSee('Hapus');
 
-            $this->actingAs($user)
+            $detailResponse = $this->actingAs($user)
                 ->get(route('admin.laporan.show', $pengaduan))
                 ->assertOk()
-                ->assertSee('Mode Monitoring')
                 ->assertDontSee('Simpan Status')
                 ->assertDontSee('Simpan Asesmen')
                 ->assertDontSee('Kirim Panggilan');
 
-            $this->actingAs($user)
+            if ($role === User::ROLE_KEPALA_BIDANG) {
+                $detailResponse->assertSee('Catatan / Tindak Lanjut Kabid');
+            } else {
+                $detailResponse->assertSee('Mode Monitoring');
+            }
+
+            $rekapResponse = $this->actingAs($user)
                 ->get(route('admin.rekap.index'))
                 ->assertOk()
-                ->assertSee('Export PDF / Cetak')
                 ->assertDontSee('Export Excel/CSV')
                 ->assertDontSee('Backup Database');
+
+            if ($role === User::ROLE_KEPALA_DINAS) {
+                $rekapResponse->assertSee('Export PDF / Cetak');
+            } else {
+                $rekapResponse->assertDontSee('Export PDF / Cetak');
+            }
         }
+    }
+
+    public function test_kabid_dapat_memberikan_catatan_tindak_lanjut_tanpa_mengubah_status(): void
+    {
+        $kabid = User::factory()->create(['role' => User::ROLE_KEPALA_BIDANG, 'aktif' => true]);
+        $pengaduan = Pengaduan::create($this->dataPengaduan([
+            'nomor_tiket' => 'PPA-2026-0005',
+            'status' => 'diterima',
+        ]));
+
+        $this->actingAs($kabid)
+            ->get(route('admin.laporan.show', $pengaduan))
+            ->assertOk()
+            ->assertSee('Catatan / Tindak Lanjut Kabid')
+            ->assertSee('Simpan Catatan')
+            ->assertDontSee('Mode Monitoring');
+
+        $this->actingAs($kabid)
+            ->post(route('admin.laporan.tindak-lanjut-kabid', $pengaduan), [
+                'catatan_tindak_lanjut' => 'Mohon prioritaskan koordinasi dengan petugas pendamping.',
+            ])
+            ->assertRedirect();
+
+        $pengaduan->refresh();
+        $this->assertSame('diterima', $pengaduan->status);
+        $this->assertDatabaseHas('riwayat_status_pengaduan', [
+            'pengaduan_id' => $pengaduan->id,
+            'status' => 'diterima',
+            'catatan' => 'Catatan Kabid PPA: Mohon prioritaskan koordinasi dengan petugas pendamping.',
+            'user_id' => $kabid->id,
+        ]);
+    }
+
+    public function test_kabid_tidak_dapat_mencetak_laporan_resmi_tetapi_kepala_dinas_dapat(): void
+    {
+        Pengaduan::create($this->dataPengaduan([
+            'nomor_tiket' => 'PPA-2026-0006',
+            'status' => 'diterima',
+        ]));
+
+        $kabid = User::factory()->create(['role' => User::ROLE_KEPALA_BIDANG, 'aktif' => true]);
+        $kepalaDinas = User::factory()->create(['role' => User::ROLE_KEPALA_DINAS, 'aktif' => true]);
+
+        $this->actingAs($kabid)
+            ->get(route('admin.rekap.export-pdf'))
+            ->assertForbidden();
+
+        $this->actingAs($kepalaDinas)
+            ->get(route('admin.rekap.export-pdf'))
+            ->assertOk()
+            ->assertSee('REKAP LAPORAN SILAPAK');
     }
 
     public function test_kabid_dan_kepala_dinas_tidak_dapat_melakukan_aksi_operasional(): void

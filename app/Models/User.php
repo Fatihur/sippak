@@ -43,6 +43,36 @@ class User extends Authenticatable
         return self::roleLabel($this->role);
     }
 
+    public function isOperator(): bool
+    {
+        return $this->role === self::ROLE_OPERATOR;
+    }
+
+    public function isKabidPpa(): bool
+    {
+        return $this->role === self::ROLE_KEPALA_BIDANG;
+    }
+
+    public function isKepalaDinas(): bool
+    {
+        return $this->role === self::ROLE_KEPALA_DINAS;
+    }
+
+    public function canManageLaporan(): bool
+    {
+        return $this->isOperator();
+    }
+
+    public function canGiveTindakLanjut(): bool
+    {
+        return $this->isKabidPpa();
+    }
+
+    public function canExportOfficialReport(): bool
+    {
+        return $this->isOperator() || $this->isKepalaDinas();
+    }
+
     /**
      * Get the attributes that should be cast.
      *
