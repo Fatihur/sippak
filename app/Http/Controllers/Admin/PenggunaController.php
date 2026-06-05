@@ -67,10 +67,10 @@ class PenggunaController extends Controller
 
     public function destroy(User $pengguna): RedirectResponse
     {
-        abort_if(auth()->id() === $pengguna->id, 422, 'Tidak dapat menonaktifkan akun sendiri.');
-        $pengguna->update(['aktif' => false]);
-        $this->logAktivitasService->catat('pengguna_dinonaktifkan', 'Email: '.$pengguna->email);
+        abort_if(auth()->id() === $pengguna->id, 422, 'Tidak dapat menghapus akun sendiri.');
+        $pengguna->delete();
+        $this->logAktivitasService->catat('pengguna_dihapus', 'Email: '.$pengguna->email);
 
-        return back()->with('success', 'Pengguna berhasil dinonaktifkan.');
+        return back()->with('success', 'Pengguna berhasil dihapus.');
     }
 }

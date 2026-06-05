@@ -23,7 +23,7 @@
                             <td>
                                 <div class="flex justify-end gap-2">
                                     <a class="table-action" href="{{ route('admin.pengguna.edit',$user) }}"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</a>
-                                    <form method="POST" action="{{ route('admin.pengguna.destroy',$user) }}">@csrf @method('DELETE')<button class="table-action text-error-600" onclick="return confirm('Nonaktifkan pengguna?')"><i class="fa-solid fa-user-slash mr-1"></i> Nonaktifkan</button></form>
+                                    <form method="POST" action="{{ route('admin.pengguna.destroy',$user) }}">@csrf @method('DELETE')<button class="table-action text-error-600" onclick="return confirm('Hapus pengguna ini?')"><i class="fa-solid fa-trash mr-1"></i> Hapus</button></form>
                                 </div>
                             </td>
                         </tr>

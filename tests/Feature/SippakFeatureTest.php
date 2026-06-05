@@ -86,6 +86,29 @@ class SippakFeatureTest extends TestCase
         $this->assertSame(1, $pengaduan->riwayatStatus()->count());
     }
 
+    public function test_operator_dapat_menghapus_pengguna(): void
+    {
+        $operator = User::factory()->create(['role' => 'operator', 'aktif' => true]);
+        $user = User::factory()->create(['role' => 'operator', 'aktif' => true]);
+
+        $this->actingAs($operator)
+            ->delete(route('admin.pengguna.destroy', $user))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
+
+    public function test_operator_tidak_dapat_menghapus_akun_sendiri(): void
+    {
+        $operator = User::factory()->create(['role' => 'operator', 'aktif' => true]);
+
+        $this->actingAs($operator)
+            ->delete(route('admin.pengguna.destroy', $operator))
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('users', ['id' => $operator->id]);
+    }
+
     public function test_label_role_user_sesuai_aktor_internal(): void
     {
         $this->assertSame('Admin/Operator', User::roleLabel('operator'));
