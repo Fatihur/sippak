@@ -28,26 +28,46 @@
                         <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen">Menu</span>
                         <i x-show="!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen" class="fa-solid fa-ellipsis"></i>
                     </h2>
+                    @php
+                        $role = auth()->user()->role;
+                        $dashboardLabel = 'Dashboard';
+                        $laporanLabel = 'Laporan Pengaduan';
+                        $rekapLabel = 'Rekap & Statistik';
+
+                        if ($role === \App\Models\User::ROLE_KEPALA_BIDANG) {
+                            $dashboardLabel = 'Dashboard Kabid';
+                            $laporanLabel = 'Pengawasan Kasus';
+                            $rekapLabel = 'Statistik & Tren';
+                        } elseif ($role === \App\Models\User::ROLE_KEPALA_DINAS) {
+                            $dashboardLabel = 'Dashboard Kadin';
+                            $laporanLabel = 'Evaluasi Laporan';
+                            $rekapLabel = 'Rekapitulasi & PDF';
+                        } else {
+                            $dashboardLabel = 'Dashboard Admin';
+                            $laporanLabel = 'Kelola Laporan';
+                            $rekapLabel = 'Rekap & Export';
+                        }
+                    @endphp
                     <ul class="flex flex-col gap-1">
                         <li>
                             <a href="{{ route('admin.dashboard') }}" class="menu-item group {{ request()->routeIs('admin.dashboard') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                 :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
                                 <span class="{{ request()->routeIs('admin.dashboard') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-gauge-high text-xl"></i></span>
-                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">Dashboard</span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">{{ $dashboardLabel }}</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('admin.laporan.index') }}" class="menu-item group {{ request()->routeIs('admin.laporan.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                 :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
                                 <span class="{{ request()->routeIs('admin.laporan.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-folder-open text-xl"></i></span>
-                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">Laporan Pengaduan</span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">{{ $laporanLabel }}</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('admin.rekap.index') }}" class="menu-item group {{ request()->routeIs('admin.rekap.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                 :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
                                 <span class="{{ request()->routeIs('admin.rekap.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-chart-column text-xl"></i></span>
-                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">Rekap & Statistik</span>
+                                <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">{{ $rekapLabel }}</span>
                             </a>
                         </li>
                         @if(auth()->user()->role === \App\Models\User::ROLE_OPERATOR)

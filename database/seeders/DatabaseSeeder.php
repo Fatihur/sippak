@@ -26,5 +26,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'kadis@silapak.test'],
             ['name' => 'Kepala Dinas', 'password' => 'password', 'role' => 'kepala_dinas', 'aktif' => true]
         );
+
+        $this->call(PengaduanSeeder::class);
     }
 }
