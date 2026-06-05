@@ -30,17 +30,47 @@ class DashboardController extends Controller
             ->pluck('total', 'bulan');
         $trenBulanan = collect(range(1, 12))->mapWithKeys(fn (int $bulan): array => [Carbon::create(now()->year, $bulan, 1)->translatedFormat('M') => (int) ($trenBulananRaw[$bulan] ?? 0)]);
         $terbaru = Pengaduan::latest()->whereNotNull('nomor_tiket')->limit(8)->get();
+
+        $kasusAtensi = collect();
+        $catatanKabid = collect();
+        $persentaseSelesai = 0;
+        $ditolak = 0;
+        $topKecamatan = collect();
+
+        if ($role === 'kepala_bidang') {
+            $kasusAtensi = Pengaduan::whereNotNull('nomor_tiket')
+                ->whereIn('status', ['menunggu_verifikasi', 'diterima', 'asesmen_awal', 'dalam_penanganan', 'pendampingan'])
+                ->where('tingkat_urgensi', 'tinggi')
+                ->latest()
+                ->limit(5)
+                ->get();
+            $catatanKabid = \App\Models\RiwayatStatusPengaduan::where('catatan', 'like', 'Catatan Kabid PPA: %')
+                ->with('pengaduan')
+                ->latest()
+                ->limit(5)
+                ->get();
+        } elseif ($role === 'kepala_dinas') {
+            $persentaseSelesai = $total > 0 ? round(($selesai / $total) * 100, 1) : 0;
+            $ditolak = Pengaduan::where('status', 'ditolak')->count();
+            $topKecamatan = Pengaduan::selectRaw('coalesce(kecamatan, "Tidak Diisi") as wilayah, count(*) as total')
+                ->whereNotNull('nomor_tiket')
+                ->groupBy('wilayah')
+                ->orderByDesc('total')
+                ->limit(3)
+                ->get();
+        }
+
         $dashboardMeta = match ($role) {
             'kepala_dinas' => [
                 'label' => 'Dashboard Kepala Dinas P2KBP3A',
-                'subtitle' => 'Pantauan eksekutif laporan PPA, tren kasus, dan rekap wilayah.',
+                'subtitle' => 'Pantauan eksekutif laporan PPA, kinerja penyelesaian kasus, dan rekap wilayah.',
                 'gradient' => 'from-violet-600 via-fuchsia-600 to-rose-500',
                 'accent' => 'violet',
                 'showFiltersHint' => false,
             ],
             'kepala_bidang' => [
                 'label' => 'Dashboard Kabid PPA',
-                'subtitle' => 'Monitoring penanganan kasus, urgensi, dan distribusi layanan bidang PPA.',
+                'subtitle' => 'Pusat pengawasan penanganan kasus, koordinasi atensi urgensi tinggi, dan pengawalan bidang PPA.',
                 'gradient' => 'from-emerald-600 via-teal-600 to-cyan-500',
                 'accent' => 'emerald',
                 'showFiltersHint' => false,
@@ -54,6 +84,11 @@ class DashboardController extends Controller
             ],
         };
 
-        return view('admin.dashboard', compact('role', 'dashboardMeta', 'total', 'bulanIni', 'selesai', 'prioritasTinggi', 'pending', 'perStatus', 'perJenis', 'perWilayah', 'trenBulanan', 'terbaru'));
+        return view('admin.dashboard', compact(
+            'role', 'dashboardMeta', 'total', 'bulanIni', 'selesai', 'prioritasTinggi', 'pending',
+            'perStatus', 'perJenis', 'perWilayah', 'trenBulanan', 'terbaru',
+            'kasusAtensi', 'catatanKabid', 'persentaseSelesai', 'ditolak', 'topKecamatan'
+        ));
     }
 }
+
