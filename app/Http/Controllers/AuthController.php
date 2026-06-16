@@ -78,10 +78,6 @@ class AuthController extends Controller
         $request->validate(['email' => ['required', 'email']]);
         $status = Password::sendResetLink($request->only('email'));
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return back()->with('success', 'Link reset password sudah dikirim ke email petugas. Silakan cek inbox/spam.');
-        }
-
         if (app()->environment(['local', 'testing'])) {
             $user = config('auth.providers.users.model')::where('email', $request->email)->first();
             if ($user) {
@@ -91,6 +87,10 @@ class AuthController extends Controller
                     ->with('success', 'Mode lokal: email reset belum terkirim melalui SMTP. Gunakan link demo di bawah ini untuk reset password.')
                     ->with('reset_link_demo', route('password.reset', ['token' => $token, 'email' => $user->email]));
             }
+        }
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return back()->with('success', 'Link reset password sudah dikirim ke email petugas. Silakan cek inbox/spam.');
         }
 
         return back()->withErrors(['email' => __($status)]);
