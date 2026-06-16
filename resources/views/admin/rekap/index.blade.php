@@ -20,7 +20,6 @@
     <div class="mt-5 flex flex-wrap gap-3">
         @if(auth()->user()->isOperator())<a class="btn-secondary" href="{{ route('admin.rekap.export-csv', request()->query()) }}"><i class="fa-solid fa-file-csv"></i> Export Excel/CSV</a>@endif
         @if(auth()->user()->canExportOfficialReport())<a class="btn-secondary" href="{{ route('admin.rekap.export-pdf', request()->query()) }}" target="_blank"><i class="fa-solid fa-print"></i> Export PDF / Cetak</a>@endif
-        @if(auth()->user()->isOperator())<a class="btn-secondary" href="{{ route('admin.backup.sqlite') }}"><i class="fa-solid fa-database"></i> Backup Database</a>@endif
     </div>
 </section>
 
