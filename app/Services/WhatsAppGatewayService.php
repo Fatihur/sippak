@@ -33,6 +33,17 @@ class WhatsAppGatewayService
         return $this->request('post', '/send-message', ['nomor' => $nomor, 'pesan' => $pesan])->json() ?? ['success' => false];
     }
 
+    public function kirimDokumen(string $nomor, string $pesan, string $base64, string $namaFile, string $mimeType = 'application/pdf'): array
+    {
+        return $this->request('post', '/send-document', [
+            'nomor' => $nomor,
+            'pesan' => $pesan,
+            'nama_file' => $namaFile,
+            'mime_type' => $mimeType,
+            'dokumen_base64' => $base64,
+        ])->json() ?? ['success' => false];
+    }
+
     public function restart(): array
     {
         return $this->request('post', '/restart')->json() ?? ['success' => false];

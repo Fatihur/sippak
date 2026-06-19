@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\LogNotifikasiWhatsApp;
 use App\Models\Pengaduan;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -24,8 +25,12 @@ class NotifikasiService
 
     public function pengaduanBerhasil(Pengaduan $pengaduan): void
     {
-        $trackingUrl = route('tracking.form');
-        $pesan = "Pengaduan SILAPAK berhasil dikirim.\n\nNomor tiket: {$pengaduan->nomor_tiket}\nStatus: Menunggu Verifikasi\n\nSimpan nomor tiket ini untuk tracking laporan: {$trackingUrl}";
+        $trackingUrl = url('/tracking');
+        $nama = $pengaduan->nama_pelapor ?: 'Pelapor';
+        $pesan = "Yth. {$nama}, laporan pengaduan SILAPAK berhasil dikirim.\n"
+            ."Nomor tiket: {$pengaduan->nomor_tiket}\n"
+            ."Status: Menunggu Verifikasi. Simpan nomor tiket ini untuk tracking laporan: {$trackingUrl}";
+
         $this->kirimEmail($pengaduan->email_pelapor, 'Pengaduan SILAPAK Berhasil Dikirim', $pesan);
         $this->kirimWhatsApp($pengaduan, $pengaduan->nomor_whatsapp, $pesan, 'pengaduan_berhasil');
         $pengaduan->forceFill(['notifikasi_terakhir_at' => now()])->saveQuietly();
@@ -65,14 +70,57 @@ class NotifikasiService
 
     public function panggilKeKantor(Pengaduan $pengaduan, ?string $catatan = null): void
     {
-        $pesan = "Yth. {$pengaduan->nama_pelapor}, laporan SILAPAK nomor {$pengaduan->nomor_tiket} sudah diproses. Mohon segera datang ke kantor DP2KBP3A Kabupaten Sumbawa untuk tindak lanjut.";
+        $nama = $pengaduan->nama_pelapor ?: 'Pelapor';
+        $pesan = "Yth. {$nama}, laporan SILAPAK nomor {$pengaduan->nomor_tiket} sudah diproses.\n"
+            ."Mohon segera datang ke kantor DP2KBP3A Kabupaten Sumbawa untuk tindak lanjut.";
         if ($catatan) {
             $pesan .= "\nCatatan: {$catatan}";
         }
 
         $this->kirimEmail($pengaduan->email_pelapor, 'Undangan Tindak Lanjut Laporan SILAPAK', $pesan);
-        $this->kirimWhatsApp($pengaduan, $pengaduan->nomor_whatsapp, $pesan, 'panggilan_kantor');
+
+        $dokumen = $this->generateBuktiPengaduanPdf($pengaduan);
+        if ($dokumen !== null) {
+            $this->kirimWhatsAppDenganDokumen(
+                $pengaduan,
+                $pengaduan->nomor_whatsapp,
+                $pesan,
+                'panggilan_kantor',
+                $dokumen['base64'],
+                $dokumen['nama_file'],
+                $dokumen['mime_type']
+            );
+        } else {
+            $this->kirimWhatsApp($pengaduan, $pengaduan->nomor_whatsapp, $pesan, 'panggilan_kantor');
+        }
+
         $pengaduan->forceFill(['notifikasi_terakhir_at' => now()])->saveQuietly();
+    }
+
+    /**
+     * Render bukti pengaduan sebagai PDF (nota/struk digital).
+     *
+     * @return array{base64:string,nama_file:string,mime_type:string}|null
+     */
+    private function generateBuktiPengaduanPdf(Pengaduan $pengaduan): ?array
+    {
+        try {
+            $pdf = Pdf::loadView('pdf.bukti-pengaduan', ['pengaduan' => $pengaduan])
+                ->setPaper('a5', 'portrait');
+
+            return [
+                'base64' => base64_encode($pdf->output()),
+                'nama_file' => "Bukti-Pengaduan-{$pengaduan->nomor_tiket}.pdf",
+                'mime_type' => 'application/pdf',
+            ];
+        } catch (Throwable $e) {
+            Log::warning('Gagal membuat PDF bukti pengaduan', [
+                'pengaduan_id' => $pengaduan->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     private function kirimEmail(?string $email, string $subjek, string $pesan): void
@@ -118,6 +166,52 @@ class NotifikasiService
         } catch (Throwable $e) {
             $log->update(['status' => 'gagal', 'error' => $e->getMessage()]);
             Log::warning('Gagal mengirim WhatsApp SILAPAK', ['nomor' => $nomorWhatsApp, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
+    private function kirimWhatsAppDenganDokumen(
+        Pengaduan $pengaduan,
+        string $nomorWhatsApp,
+        string $pesan,
+        string $jenis,
+        string $base64,
+        string $namaFile,
+        string $mimeType,
+    ): bool {
+        $log = LogNotifikasiWhatsApp::create([
+            'pengaduan_id' => $pengaduan->id,
+            'nomor_tujuan' => $nomorWhatsApp,
+            'jenis' => $jenis,
+            'status' => 'pending',
+            'pesan' => $pesan."\n\n[Lampiran: {$namaFile}]",
+        ]);
+
+        try {
+            $result = $this->whatsAppGatewayService->kirimDokumen(
+                $nomorWhatsApp,
+                $pesan,
+                $base64,
+                $namaFile,
+                $mimeType
+            );
+            $success = (bool) ($result['success'] ?? false);
+            $log->update([
+                'status' => $success ? 'terkirim' : 'gagal',
+                'response' => $result,
+                'error' => $success ? null : ($result['message'] ?? 'Gateway merespon gagal.'),
+                'terkirim_at' => $success ? now() : null,
+            ]);
+
+            if (! $success) {
+                Log::warning('WhatsApp Gateway SILAPAK (dokumen) merespon gagal', ['nomor' => $nomorWhatsApp, 'response' => $result]);
+            }
+
+            return $success;
+        } catch (Throwable $e) {
+            $log->update(['status' => 'gagal', 'error' => $e->getMessage()]);
+            Log::warning('Gagal mengirim WhatsApp SILAPAK (dokumen)', ['nomor' => $nomorWhatsApp, 'error' => $e->getMessage()]);
 
             return false;
         }

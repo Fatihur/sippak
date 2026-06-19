@@ -263,11 +263,11 @@
 
 <section class="panel mt-6">
     <div class="panel-header"><div><h3 class="panel-title">{{ $role === 'operator' ? 'Laporan Terbaru' : 'Data Laporan Terbaru' }}</h3><p class="panel-subtitle">{{ $role === 'operator' ? 'Daftar laporan terverifikasi terbaru.' : 'Mode pimpinan: data laporan tanpa filter, fokus monitoring.' }}</p></div><a href="{{ route('admin.laporan.index') }}" class="text-sm font-medium text-brand-500 hover:text-brand-600">Lihat semua</a></div>
-    <div class="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Tiket</th><th>Pelapor</th><th>Jenis</th><th>Status</th><th class="text-right">Aksi</th></tr></thead><tbody>
+    <div class="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Tiket</th>@if($role === 'operator')<th>Pelapor</th>@endif<th>Jenis</th><th>Status</th><th class="text-right">Aksi</th></tr></thead><tbody>
         @forelse($terbaru as $item)
-            <tr><td class="font-medium text-gray-800 dark:text-white/90">{{ $item->nomor_tiket }}</td><td>{{ $item->nama_pelapor }}</td><td>{{ $item->jenis_kekerasan }}</td><td><span class="badge">{{ $item->status_label }}</span></td><td class="text-right"><a class="table-action" href="{{ route('admin.laporan.show',$item) }}">Detail</a></td></tr>
+            <tr><td class="font-medium text-gray-800 dark:text-white/90">{{ $item->nomor_tiket }}</td>@if($role === 'operator')<td>{{ $item->nama_pelapor }}</td>@endif<td>{{ $item->jenis_kekerasan }}</td><td><span class="badge">{{ $item->status_label }}</span></td><td class="text-right"><a class="table-action" href="{{ route('admin.laporan.show',$item) }}">Detail</a></td></tr>
         @empty
-            <tr><td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">Belum ada laporan terbaru.</td></tr>
+            <tr><td colspan="{{ $role === 'operator' ? 5 : 4 }}" class="py-8 text-center text-gray-500 dark:text-gray-400">Belum ada laporan terbaru.</td></tr>
         @endforelse
     </tbody></table></div></div>
 </section>

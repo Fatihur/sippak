@@ -31,13 +31,15 @@
     <div class="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
         <div class="overflow-x-auto">
             <table class="admin-table">
-                <thead><tr><th>Tiket</th><th>Tanggal</th><th>Pelapor</th><th>Jenis</th><th>Kecamatan</th><th>Status</th><th>Urgensi</th><th class="text-right">Aksi</th></tr></thead>
+                <thead><tr><th>Tiket</th><th>Tanggal</th>@if(auth()->user()->isOperator())<th>Pelapor</th>@endif<th>Jenis</th><th>Kecamatan</th><th>Status</th><th>Urgensi</th><th class="text-right">Aksi</th></tr></thead>
                 <tbody>
                 @forelse($laporan as $item)
                     <tr>
                         <td class="font-medium text-gray-800 dark:text-white/90">{{ $item->nomor_tiket }}</td>
                         <td>{{ $item->created_at->format('d/m/Y') }}</td>
-                        <td>{{ $item->nama_pelapor }}</td>
+                        @if(auth()->user()->isOperator())
+                            <td>{{ $item->nama_pelapor }}</td>
+                        @endif
                         <td>{{ $item->jenis_kekerasan }}</td>
                         <td>{{ $item->kecamatan ?: '-' }}</td>
                         <td><span class="badge">{{ $item->status_label }}</span></td>
@@ -56,7 +58,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="py-10 text-center text-gray-500 dark:text-gray-400">Belum ada laporan sesuai filter.</td></tr>
+                    <tr><td colspan="{{ auth()->user()->isOperator() ? 8 : 7 }}" class="py-10 text-center text-gray-500 dark:text-gray-400">Belum ada laporan sesuai filter.</td></tr>
                 @endforelse
                 </tbody>
             </table>

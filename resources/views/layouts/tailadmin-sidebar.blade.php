@@ -39,7 +39,7 @@
                             $laporanLabel = 'Pengawasan Kasus';
                             $rekapLabel = 'Statistik & Tren';
                         } elseif ($role === \App\Models\User::ROLE_KEPALA_DINAS) {
-                            $dashboardLabel = 'Dashboard Kadin';
+                            $dashboardLabel = 'Dashboard Kadis';
                             $laporanLabel = 'Evaluasi Laporan';
                             $rekapLabel = 'Rekapitulasi & PDF';
                         } else {

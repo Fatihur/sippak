@@ -24,7 +24,7 @@ let lastDisconnectReason = null;
 let reconnecting = false;
 
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 function requireToken(req, res, next) {
     const bearer = req.headers.authorization?.replace('Bearer ', '');
@@ -130,6 +130,49 @@ app.post('/send-message', requireToken, async (req, res) => {
         const jid = normalizeNumber(number);
         const result = await sock.sendMessage(jid, { text: message });
         return res.json({ success: true, jid, message_id: result?.key?.id || null });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/send-document', requireToken, async (req, res) => {
+    try {
+        const number = req.body.nomor || req.body.number || req.body.to;
+        const caption = req.body.pesan || req.body.caption || req.body.message || '';
+        const base64 = req.body.dokumen_base64 || req.body.document_base64 || req.body.base64;
+        const fileName = req.body.nama_file || req.body.fileName || 'dokumen.pdf';
+        const mimeType = req.body.mime_type || req.body.mimetype || 'application/pdf';
+
+        if (!number || !base64) {
+            return res.status(422).json({ success: false, message: 'nomor dan dokumen_base64 wajib diisi.' });
+        }
+        if (!sock || connectionStatus !== 'connected') {
+            return res.status(503).json({ success: false, message: 'WhatsApp belum terhubung.' });
+        }
+
+        const buffer = Buffer.from(base64, 'base64');
+        if (!buffer.length) {
+            return res.status(422).json({ success: false, message: 'dokumen_base64 tidak valid.' });
+        }
+
+        const jid = normalizeNumber(number);
+        const payload = {
+            document: buffer,
+            mimetype: mimeType,
+            fileName,
+        };
+        if (caption) {
+            payload.caption = caption;
+        }
+
+        const result = await sock.sendMessage(jid, payload);
+        return res.json({
+            success: true,
+            jid,
+            message_id: result?.key?.id || null,
+            file_name: fileName,
+            size: buffer.length,
+        });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
