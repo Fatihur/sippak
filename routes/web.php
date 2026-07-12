@@ -54,6 +54,8 @@ Route::middleware(['auth', 'role:operator,kepala_bidang,kepala_dinas'])->prefix(
     Route::post('/laporan/{laporan}/tindak-lanjut-kabid', [LaporanController::class, 'simpanTindakLanjutKabid'])->middleware('role:kepala_bidang')->name('laporan.tindak-lanjut-kabid');
     Route::get('/bukti/{id}', [LaporanController::class, 'unduhBukti'])->name('bukti.unduh');
     Route::get('/bukti/{id}/preview', [LaporanController::class, 'previewBukti'])->name('bukti.preview');
+    Route::get('/laporan/{laporan}/cetak', [LaporanController::class, 'cetakLaporan'])->name('laporan.cetak');
+    Route::get('/laporan/{laporan}/cetak-disposisi', [LaporanController::class, 'cetakDisposisi'])->name('laporan.cetak-disposisi');
     Route::get('/rekap', [RekapController::class, 'index'])->name('rekap.index');
     Route::get('/rekap/export-csv', [RekapController::class, 'exportCsv'])->middleware('role:operator')->name('rekap.export-csv');
     Route::get('/rekap/export-pdf', [RekapController::class, 'exportPdf'])->middleware('role:operator,kepala_dinas')->name('rekap.export-pdf');

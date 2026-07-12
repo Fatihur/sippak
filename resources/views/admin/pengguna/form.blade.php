@@ -13,6 +13,8 @@
         <div><label class="label">Nama</label><input name="name" value="{{ old('name',$user->name) }}" class="input" placeholder="Nama lengkap" required></div>
         <div><label class="label">Email</label><input type="email" name="email" value="{{ old('email',$user->email) }}" class="input" placeholder="nama@email.com" required></div>
         <div><label class="label">Role</label><select name="role" class="input">@foreach(\App\Models\User::opsiRole() as $key=>$label)<option value="{{ $key }}" @selected(old('role',$user->role ?: \App\Models\User::ROLE_OPERATOR)===$key)>{{ $label }}</option>@endforeach</select></div>
+        <div><label class="label">NIP</label><input name="nip" value="{{ old('nip',$user->nip) }}" class="input" placeholder="Nomor Induk Pegawai"></div>
+        <div><label class="label">Jabatan</label><input name="jabatan" value="{{ old('jabatan',$user->jabatan) }}" class="input" placeholder="Contoh: Kabid PPA"></div>
         <div class="flex items-end"><label class="check-row w-full"><input type="checkbox" name="aktif" value="1" @checked(old('aktif',$user->aktif ?? true))> Akun aktif</label></div>
         <div><label class="label">Password {{ $user->exists ? '(kosongkan jika tidak diganti)' : '' }}</label><input type="password" name="password" class="input" placeholder="Minimal 8 karakter" @required(! $user->exists)></div>
         <div><label class="label">Konfirmasi Password</label><input type="password" name="password_confirmation" class="input" placeholder="Ulangi password" @required(! $user->exists)></div>

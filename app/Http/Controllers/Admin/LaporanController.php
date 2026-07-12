@@ -7,6 +7,7 @@ use App\Models\AsesmenAwal;
 use App\Models\BuktiPengaduan;
 use App\Models\Pengaduan;
 use App\Models\RiwayatStatusPengaduan;
+use App\Models\User;
 use App\Services\LogAktivitasService;
 use App\Services\NotifikasiService;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -202,6 +204,22 @@ class LaporanController extends Controller
             'Content-Type' => $bukti->mime_type ?: 'application/octet-stream',
             'Content-Disposition' => 'inline; filename="'.addslashes($bukti->nama_asli).'"',
         ]);
+    }
+
+    public function cetakLaporan(Pengaduan $laporan)
+    {
+        $kabid = User::where('role', User::ROLE_KEPALA_BIDANG)->first();
+        $pdf = Pdf::loadView('pdf.cetak-laporan', ['pengaduan' => $laporan, 'kabid' => $kabid]);
+
+        return $pdf->download('Laporan-'.$laporan->nomor_tiket.'.pdf');
+    }
+
+    public function cetakDisposisi(Pengaduan $laporan)
+    {
+        $kabid = User::where('role', User::ROLE_KEPALA_BIDANG)->first();
+        $pdf = Pdf::loadView('pdf.cetak-disposisi', ['pengaduan' => $laporan, 'kabid' => $kabid]);
+
+        return $pdf->download('Disposisi-'.$laporan->nomor_tiket.'.pdf');
     }
 
     private function opsiJenisKasus(): array

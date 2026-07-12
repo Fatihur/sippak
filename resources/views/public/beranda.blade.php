@@ -12,7 +12,7 @@
             <h1 class="mx-auto mt-7 max-w-5xl text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl">Layanan Pengaduan untuk Perempuan dan Anak</h1>
             <p class="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-100 sm:text-xl">Masyarakat bisa melaporkan kejadian kekerasan di sekitar mereka melalui formulir online. Cepat, aman, rahasia, dan ditangani petugas berwenang.</p>
             <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
-                <a href="{{ route('pengaduan.buat') }}" class="rounded-none bg-orange-500 px-8 py-4 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-500/25 transition hover:-translate-y-1 hover:bg-orange-600"><i class="fa-solid fa-paper-plane mr-2"></i>Lapor Sekarang!</a>
+                <a href="{{ route('pengaduan.buat') }}" class="rounded-none bg-green-500 px-8 py-4 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-500/25 transition hover:-translate-y-1 hover:bg-orange-600"><i class="fa-solid fa-paper-plane mr-2"></i>Lapor Sekarang!</a>
                 <a href="{{ route('tracking.form') }}" class="rounded-none border border-white/25 bg-white/95 px-8 py-4 text-sm font-black text-slate-900 shadow-theme-sm transition hover:-translate-y-1 hover:bg-orange-50"><i class="fa-solid fa-magnifying-glass-location mr-2 text-orange-500"></i>Tracking Laporan</a>
             </div>
         </div>
@@ -48,7 +48,7 @@
         </div>
         <div class="order-1 lg:order-2 silap-reveal">
             <p class="section-kicker">Tips</p>
-            <h2 class="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">Kapan Anda Harus Menghubungi SILAPAK?</h2>
+            <h2 class="mt-3 text-4xl text-blue-400 tracking-tight  sm:text-5xl">Kapan Anda Harus Menghubungi SILAPAK?</h2>
             <p class="mt-5 text-lg leading-8 text-slate-600">Segera hubungi kami jika Anda melihat, mengalami, atau mengetahui kekerasan fisik, psikis, seksual, penelantaran, eksploitasi, atau ancaman terhadap perempuan dan anak.</p>
             <div class="mt-8 space-y-4">
                 @foreach(['Ada ancaman keselamatan korban atau anak.','Korban membutuhkan pendampingan psikologis, kesehatan, atau hukum.','Anda memiliki informasi atau bukti kekerasan di sekitar Anda.'] as $point)
@@ -61,7 +61,7 @@
 
 <section id="mengapa-lapor" class="bg-white py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="max-w-3xl silap-reveal"><p class="section-kicker">Mengapa Harus Lapor</p><h2 class="mt-3 text-4xl font-black text-slate-950 sm:text-5xl">Mengapa Harus Menghubungi SILAPAK?</h2></div>
+        <div class="max-w-3xl silap-reveal"><p class="section-kicker">Mengapa Harus Lapor</p><h2 class="mt-3 text-4xl font-black text-yellow-400 sm:text-5xl">Mengapa Harus Menghubungi SILAPAK?</h2></div>
         <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             @foreach([['Tindakan Cepat','Petugas merespons laporan dan memberi arahan sesuai kondisi korban.'],['Pendampingan Korban','Korban diarahkan untuk psikologis, kesehatan, visum, atau bantuan lanjutan.'],['Keamanan Terjamin','Petugas membantu memastikan korban berada pada lingkungan yang lebih aman.'],['Dukungan Hukum','Korban mendapat arahan saat berurusan dengan pihak berwenang.']] as [$title,$desc])
                 <article class="reason-card silap-reveal"><span>0{{ $loop->iteration }}</span><h3>{{ $title }}</h3><p>{{ $desc }}</p></article>
@@ -86,7 +86,7 @@
 <section id="statistik" class="bg-orange-500 py-16 text-white">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach([['Total Pengaduan',$totalPengaduan],['Kasus Diproses',$kasusDiproses],['Kasus Selesai',$kasusSelesai],['Kasus Bulan Ini',$kasusBulanIni]] as [$label,$value])
+            @foreach([['Total Pengeluaran',$totalPengaduan],['Kasus Diproses',$kasusDiproses],['Kasus Selesai',$kasusSelesai],['Kasus Bulan Ini',$kasusBulanIni]] as [$label,$value])
                 <div class="rounded-none bg-white/15 p-6 ring-1 ring-white/20 backdrop-blur transition hover:-translate-y-1"><p class="text-sm font-bold uppercase tracking-widest text-orange-100">{{ $label }}</p><p class="mt-3 text-5xl font-black">{{ number_format($value) }}</p></div>
             @endforeach
         </div>

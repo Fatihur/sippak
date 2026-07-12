@@ -9,6 +9,8 @@
     <div class="flex flex-wrap gap-2">
         <span class="badge">{{ $laporan->status_label }}</span>
         <span class="urgency urgency-{{ $laporan->tingkat_urgensi }}">Urgensi {{ ucfirst($laporan->tingkat_urgensi) }}</span>
+        <a href="{{ route('admin.laporan.cetak', $laporan) }}" class="btn-secondary" target="_blank"><i class="fa-solid fa-print"></i> Cetak Laporan</a>
+        <a href="{{ route('admin.laporan.cetak-disposisi', $laporan) }}" class="btn-secondary" target="_blank"><i class="fa-solid fa-file-lines"></i> Cetak Disposisi</a>
         @if(auth()->user()->canManageLaporan())
             <a href="{{ route('admin.laporan.edit', $laporan) }}" class="btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
             <form method="POST" action="{{ route('admin.laporan.destroy', $laporan) }}" onsubmit="return confirm('Hapus tiket {{ $laporan->nomor_tiket }}? Data tidak bisa dikembalikan.')">

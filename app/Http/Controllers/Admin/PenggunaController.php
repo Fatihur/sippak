@@ -32,6 +32,8 @@ class PenggunaController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
             'role' => ['required', 'in:operator,kepala_bidang,kepala_dinas'],
+            'nip' => ['nullable', 'string', 'max:30'],
+            'jabatan' => ['nullable', 'string', 'max:100'],
             'aktif' => ['nullable', 'boolean'],
         ]);
         $data['aktif'] = $request->boolean('aktif');
@@ -53,6 +55,8 @@ class PenggunaController extends Controller
             'email' => ['required', 'email', 'unique:users,email,'.$pengguna->id],
             'password' => ['nullable', 'confirmed', 'min:8'],
             'role' => ['required', 'in:operator,kepala_bidang,kepala_dinas'],
+            'nip' => ['nullable', 'string', 'max:30'],
+            'jabatan' => ['nullable', 'string', 'max:100'],
             'aktif' => ['nullable', 'boolean'],
         ]);
         $data['aktif'] = $request->boolean('aktif');

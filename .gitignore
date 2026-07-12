@@ -21,7 +21,8 @@
 /storage/*.key
 /storage/pail
 /vendor
-wa-gateway/storage
+wa-gateway/
+wa-gateway.zip
 _ide_helper.php
 Homestead.json
 Homestead.yaml
