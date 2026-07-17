@@ -53,6 +53,26 @@ class Pengaduan extends Model
         return $this->belongsTo(User::class, 'operator_id');
     }
 
+    public function disposisi(): HasMany
+    {
+        return $this->hasMany(Disposisi::class, 'pengaduan_id');
+    }
+
+    public function disposisiKadis(): HasOne
+    {
+        return $this->hasOne(Disposisi::class, 'pengaduan_id')->where('tingkat', 'kadis')->latest();
+    }
+
+    public function disposisiKabid(): HasOne
+    {
+        return $this->hasOne(Disposisi::class, 'pengaduan_id')->where('tingkat', 'kabid')->latest();
+    }
+
+    public function tindakLanjut(): HasMany
+    {
+        return $this->hasMany(TindakLanjut::class, 'pengaduan_id');
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return self::labelStatus($this->status);
@@ -69,6 +89,9 @@ class Pengaduan extends Model
             'menunggu_verifikasi' => 'Menunggu Verifikasi',
             'diterima' => 'Diterima',
             'revisi' => 'Revisi',
+            'menunggu_disposisi_kadis' => 'Menunggu Disposisi Kepala Dinas',
+            'didisposisikan_ke_kabid' => 'Didisposisikan ke Kabid',
+            'menunggu_tindak_lanjut_operator' => 'Menunggu Tindak Lanjut Operator',
             'asesmen_awal' => 'Asesmen Awal',
             'dalam_penanganan' => 'Dalam Penanganan',
             'pendampingan' => 'Pendampingan',

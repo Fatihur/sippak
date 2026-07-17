@@ -9,14 +9,30 @@
     <div class="flex flex-wrap gap-2">
         <span class="badge">{{ $laporan->status_label }}</span>
         <span class="urgency urgency-{{ $laporan->tingkat_urgensi }}">Urgensi {{ ucfirst($laporan->tingkat_urgensi) }}</span>
+        <a href="{{ route('admin.disposisi.riwayat', $laporan) }}" class="btn-secondary"><i class="fa-solid fa-timeline"></i> Riwayat Disposisi</a>
         <a href="{{ route('admin.laporan.cetak', $laporan) }}" class="btn-secondary" target="_blank"><i class="fa-solid fa-print"></i> Cetak Laporan</a>
-        <a href="{{ route('admin.laporan.cetak-disposisi', $laporan) }}" class="btn-secondary" target="_blank"><i class="fa-solid fa-file-lines"></i> Cetak Disposisi</a>
         @if(auth()->user()->canManageLaporan())
+            @if(in_array($laporan->status, ['menunggu_verifikasi', 'diterima']))
+                <form method="POST" action="{{ route('admin.laporan.kirim-ke-kadis', $laporan) }}" onsubmit="return confirm('Kirim pengaduan ini ke Kepala Dinas?')">
+                    @csrf
+                    <button class="btn-primary" type="submit"><i class="fa-solid fa-arrow-up"></i> Kirim ke Kepala Dinas</button>
+                </form>
+            @endif
+            @if($laporan->status === 'menunggu_tindak_lanjut_operator')
+                <a href="{{ route('admin.disposisi.tindak-lanjut', $laporan) }}" class="btn-primary"><i class="fa-solid fa-check"></i> Tindak Lanjut</a>
+            @endif
             <a href="{{ route('admin.laporan.edit', $laporan) }}" class="btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
             <form method="POST" action="{{ route('admin.laporan.destroy', $laporan) }}" onsubmit="return confirm('Hapus tiket {{ $laporan->nomor_tiket }}? Data tidak bisa dikembalikan.')">
                 @csrf @method('DELETE')
                 <button class="btn-danger" type="submit"><i class="fa-solid fa-trash"></i> Hapus</button>
             </form>
+        @elseif(auth()->user()->isKepalaDinas() && $laporan->status === 'menunggu_disposisi_kadis')
+            <a href="{{ route('admin.disposisi.kadis-form', $laporan) }}" class="btn-primary"><i class="fa-solid fa-pen"></i> Buat Disposisi</a>
+        @elseif(auth()->user()->isKabidPpa() && $laporan->status === 'didisposisikan_ke_kabid')
+            @php $dispKadis = $laporan->disposisi->where('tingkat', 'kadis')->first(); @endphp
+            @if($dispKadis)
+                <a href="{{ route('admin.disposisi.kabid-form', $dispKadis) }}" class="btn-primary"><i class="fa-solid fa-forward"></i> Teruskan Disposisi</a>
+            @endif
         @endif
     </div>
 </div>
@@ -86,6 +102,52 @@
                     </div>
                 @empty
                     <div class="empty-state">Belum ada riwayat status.</div>
+                @endforelse
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h3 class="panel-title">Riwayat Disposisi</h3>
+                    <p class="panel-subtitle">Alur disposisi dari Kepala Dinas hingga tindak lanjut</p>
+                </div>
+                <a href="{{ route('admin.disposisi.riwayat', $laporan) }}" class="text-sm font-medium text-brand-500 hover:underline">Lihat semua</a>
+            </div>
+            <div class="mt-5 space-y-4">
+                @php
+                    $riwayatDisp = collect();
+                    foreach($laporan->disposisi as $d) {
+                        $riwayatDisp->push([
+                            'waktu' => $d->created_at,
+                            'teks' => $d->tingkat === 'kadis'
+                                ? 'Kadis memberikan disposisi ke '.($d->untukUser?->name ?: 'Kabid')
+                                : 'Kabid meneruskan disposisi ke Operator ('.$d->nama_petugas.')',
+                            'link' => route('admin.disposisi.show', $d),
+                        ]);
+                    }
+                    foreach($laporan->tindakLanjut as $tl) {
+                        $riwayatDisp->push([
+                            'waktu' => $tl->created_at,
+                            'teks' => 'Tindak lanjut: '.Str::limit($tl->hasil_penanganan, 80),
+                            'link' => null,
+                        ]);
+                    }
+                    $riwayatDisp = $riwayatDisp->sortByDesc('waktu');
+                @endphp
+                @forelse($riwayatDisp as $rd)
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div>
+                            <p class="font-semibold text-gray-800 dark:text-white/90">{{ $rd['teks'] }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $rd['waktu']->format('d/m/Y H:i') }}</p>
+                            @if($rd['link'])
+                                <a href="{{ $rd['link'] }}" class="text-xs font-medium text-brand-500 hover:underline">Lihat disposisi</a>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="empty-state">Belum ada disposisi.</div>
                 @endforelse
             </div>
         </section>

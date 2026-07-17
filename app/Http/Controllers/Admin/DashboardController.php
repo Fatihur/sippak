@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Disposisi;
 use App\Models\Pengaduan;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -22,7 +23,7 @@ class DashboardController extends Controller
         $perStatus = Pengaduan::selectRaw('status, count(*) as total')->whereNotNull('nomor_tiket')->groupBy('status')->pluck('total', 'status');
         $perJenis = Pengaduan::selectRaw('jenis_kekerasan, count(*) as total')->whereNotNull('nomor_tiket')->groupBy('jenis_kekerasan')->pluck('total', 'jenis_kekerasan');
         $perWilayah = Pengaduan::selectRaw('coalesce(kecamatan, "Tidak Diisi") as wilayah, count(*) as total')->whereNotNull('nomor_tiket')->groupBy('wilayah')->pluck('total', 'wilayah');
-        $trenBulananRaw = Pengaduan::selectRaw('MONTH(created_at) as bulan, count(*) as total')
+        $trenBulananRaw = Pengaduan::selectRaw('CAST(strftime(\'%m\', created_at) AS INTEGER) as bulan, count(*) as total')
             ->whereNotNull('nomor_tiket')
             ->whereYear('created_at', now()->year)
             ->groupBy('bulan')
@@ -33,13 +34,14 @@ class DashboardController extends Controller
 
         $kasusAtensi = collect();
         $catatanKabid = collect();
+        $disposisiMasuk = collect();
         $persentaseSelesai = 0;
         $ditolak = 0;
         $topKecamatan = collect();
 
         if ($role === 'kepala_bidang') {
             $kasusAtensi = Pengaduan::whereNotNull('nomor_tiket')
-                ->whereIn('status', ['menunggu_verifikasi', 'diterima', 'asesmen_awal', 'dalam_penanganan', 'pendampingan'])
+                ->whereIn('status', ['menunggu_verifikasi', 'diterima', 'asesmen_awal', 'dalam_penanganan', 'pendampingan', 'didisposisikan_ke_kabid'])
                 ->where('tingkat_urgensi', 'tinggi')
                 ->latest()
                 ->limit(5)
@@ -49,9 +51,20 @@ class DashboardController extends Controller
                 ->latest()
                 ->limit(5)
                 ->get();
+            $disposisiMasuk = Disposisi::where('tingkat', 'kadis')
+                ->where('untuk_user_id', $user->id)
+                ->with('pengaduan', 'dariUser')
+                ->latest()
+                ->limit(5)
+                ->get();
         } elseif ($role === 'kepala_dinas') {
             $persentaseSelesai = $total > 0 ? round(($selesai / $total) * 100, 1) : 0;
             $ditolak = Pengaduan::where('status', 'ditolak')->count();
+            $menungguDisposisi = Pengaduan::where('status', 'menunggu_disposisi_kadis')->count();
+            $disposisiMasuk = Pengaduan::where('status', 'menunggu_disposisi_kadis')
+                ->latest()
+                ->limit(5)
+                ->get();
             $topKecamatan = Pengaduan::selectRaw('coalesce(kecamatan, "Tidak Diisi") as wilayah, count(*) as total')
                 ->whereNotNull('nomor_tiket')
                 ->groupBy('wilayah')
@@ -87,7 +100,8 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'role', 'dashboardMeta', 'total', 'bulanIni', 'selesai', 'prioritasTinggi', 'pending',
             'perStatus', 'perJenis', 'perWilayah', 'trenBulanan', 'terbaru',
-            'kasusAtensi', 'catatanKabid', 'persentaseSelesai', 'ditolak', 'topKecamatan'
+            'kasusAtensi', 'catatanKabid', 'persentaseSelesai', 'ditolak', 'topKecamatan',
+            'disposisiMasuk'
         ));
     }
 }

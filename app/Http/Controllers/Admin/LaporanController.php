@@ -52,7 +52,7 @@ class LaporanController extends Controller
 
     public function show(Pengaduan $laporan): View
     {
-        $laporan->load(['bukti', 'riwayatStatus.user', 'asesmenAwal', 'operator']);
+        $laporan->load(['bukti', 'riwayatStatus.user', 'asesmenAwal', 'operator', 'disposisi.dariUser', 'tindakLanjut.user']);
 
         return view('admin.laporan.show', compact('laporan'));
     }
@@ -104,7 +104,7 @@ class LaporanController extends Controller
     public function updateStatus(Request $request, Pengaduan $laporan): RedirectResponse
     {
         $data = $request->validate([
-            'status' => ['required', 'in:menunggu_verifikasi,diterima,revisi,asesmen_awal,dalam_penanganan,pendampingan,dirujuk,selesai,ditolak'],
+            'status' => ['required', 'in:menunggu_verifikasi,diterima,revisi,menunggu_disposisi_kadis,didisposisikan_ke_kabid,menunggu_tindak_lanjut_operator,asesmen_awal,dalam_penanganan,pendampingan,dirujuk,selesai,ditolak'],
             'tingkat_urgensi' => ['required', 'in:tinggi,sedang,rendah'],
             'catatan' => ['nullable', 'string'],
         ]);
@@ -216,10 +216,15 @@ class LaporanController extends Controller
 
     public function cetakDisposisi(Pengaduan $laporan)
     {
-        $kabid = User::where('role', User::ROLE_KEPALA_BIDANG)->first();
-        $pdf = Pdf::loadView('pdf.cetak-disposisi', ['pengaduan' => $laporan, 'kabid' => $kabid]);
-
-        return $pdf->download('Disposisi-'.$laporan->nomor_tiket.'.pdf');
+        $disposisi = $laporan->disposisi()->latest()->first();
+        if (!$disposisi) {
+            $kabid = User::where('role', User::ROLE_KEPALA_BIDANG)->first();
+            $pdf = Pdf::loadView('pdf.cetak-disposisi-lama', ['pengaduan' => $laporan, 'kabid' => $kabid]);
+            return $pdf->download('Disposisi-'.$laporan->nomor_tiket.'.pdf');
+        }
+        $disposisi->load(['pengaduan', 'dariUser', 'untukUser']);
+        $pdf = Pdf::loadView('pdf.cetak-disposisi', ['disposisi' => $disposisi]);
+        return $pdf->download('Disposisi-'.$disposisi->nomor_disposisi.'.pdf');
     }
 
     private function opsiJenisKasus(): array

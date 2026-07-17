@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DisposisiController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\LogWhatsAppController;
 use App\Http\Controllers\Admin\PenggunaController;
@@ -56,6 +57,17 @@ Route::middleware(['auth', 'role:operator,kepala_bidang,kepala_dinas'])->prefix(
     Route::get('/bukti/{id}/preview', [LaporanController::class, 'previewBukti'])->name('bukti.preview');
     Route::get('/laporan/{laporan}/cetak', [LaporanController::class, 'cetakLaporan'])->name('laporan.cetak');
     Route::get('/laporan/{laporan}/cetak-disposisi', [LaporanController::class, 'cetakDisposisi'])->name('laporan.cetak-disposisi');
+    Route::post('/laporan/{laporan}/kirim-ke-kadis', [DisposisiController::class, 'kirimKeKadis'])->name('laporan.kirim-ke-kadis');
+    Route::get('/disposisi', [DisposisiController::class, 'index'])->name('disposisi.index');
+    Route::get('/disposisi/{laporan}/kadis-form', [DisposisiController::class, 'createKadis'])->middleware('role:kepala_dinas')->name('disposisi.kadis-form');
+    Route::post('/disposisi/{laporan}/kadis-form', [DisposisiController::class, 'storeKadis'])->middleware('role:kepala_dinas')->name('disposisi.kadis-store');
+    Route::get('/disposisi/{disposisi}', [DisposisiController::class, 'show'])->name('disposisi.show');
+    Route::get('/disposisi/{disposisi}/kabid-form', [DisposisiController::class, 'createKabid'])->middleware('role:kepala_bidang')->name('disposisi.kabid-form');
+    Route::post('/disposisi/{disposisi}/kabid-form', [DisposisiController::class, 'storeKabid'])->middleware('role:kepala_bidang')->name('disposisi.kabid-store');
+    Route::get('/disposisi/{laporan}/riwayat', [DisposisiController::class, 'riwayat'])->name('disposisi.riwayat');
+    Route::get('/disposisi/{laporan}/tindak-lanjut', [DisposisiController::class, 'tindakLanjut'])->middleware('role:operator')->name('disposisi.tindak-lanjut');
+    Route::post('/disposisi/{laporan}/tindak-lanjut', [DisposisiController::class, 'storeTindakLanjut'])->middleware('role:operator')->name('disposisi.tindak-lanjut-store');
+    Route::get('/disposisi/{disposisi}/cetak', [DisposisiController::class, 'cetak'])->name('disposisi.cetak');
     Route::get('/rekap', [RekapController::class, 'index'])->name('rekap.index');
     Route::get('/rekap/export-csv', [RekapController::class, 'exportCsv'])->middleware('role:operator')->name('rekap.export-csv');
     Route::get('/rekap/export-pdf', [RekapController::class, 'exportPdf'])->middleware('role:operator,kepala_dinas')->name('rekap.export-pdf');

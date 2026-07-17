@@ -57,12 +57,21 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('admin.laporan.index') }}" class="menu-item group {{ request()->routeIs('admin.laporan.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                            <a href="{{ route('admin.laporan.index') }}" class="menu-item group {{ request()->routeIs('admin.laporan.*') && !request()->routeIs('admin.disposisi.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                 :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
-                                <span class="{{ request()->routeIs('admin.laporan.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-folder-open text-xl"></i></span>
+                                <span class="{{ request()->routeIs('admin.laporan.*') && !request()->routeIs('admin.disposisi.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-folder-open text-xl"></i></span>
                                 <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">{{ $laporanLabel }}</span>
                             </a>
                         </li>
+                        @if(auth()->user()->role !== \App\Models\User::ROLE_OPERATOR)
+                            <li>
+                                <a href="{{ route('admin.disposisi.index') }}" class="menu-item group {{ request()->routeIs('admin.disposisi.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
+                                    :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">
+                                    <span class="{{ request()->routeIs('admin.disposisi.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"><i class="fa-solid fa-file-signature text-xl"></i></span>
+                                    <span x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" class="menu-item-text">Disposisi</span>
+                                </a>
+                            </li>
+                        @endif
                         <li>
                             <a href="{{ route('admin.rekap.index') }}" class="menu-item group {{ request()->routeIs('admin.rekap.*') ? 'menu-item-active' : 'menu-item-inactive' }}"
                                 :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'xl:justify-center' : 'justify-start'">

@@ -93,7 +93,36 @@
 @if($role === 'kepala_bidang')
     <!-- KHUSUS TAMPILAN KABID PPA: PENGAWASAN & KOORDINASI -->
     <div class="mt-6 grid grid-cols-12 gap-4 md:gap-6">
-        <section class="panel col-span-12 lg:col-span-8">
+        <section class="panel col-span-12 lg:col-span-5">
+            <div class="panel-header">
+                <div>
+                    <h3 class="panel-title text-emerald-600 dark:text-emerald-400">Disposisi Masuk</h3>
+                    <p class="panel-subtitle">Disposisi terbaru dari Kepala Dinas yang perlu ditindaklanjuti.</p>
+                </div>
+                <span class="badge bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">{{ $disposisiMasuk->count() }} Baru</span>
+            </div>
+            <div class="mt-5 space-y-4">
+                @forelse($disposisiMasuk as $disp)
+                    <div class="rounded-xl border border-gray-150 p-4 dark:border-gray-800 bg-gray-25 dark:bg-gray-900/20">
+                        <div class="flex items-center justify-between">
+                            <a href="{{ route('admin.disposisi.show', $disp) }}" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                {{ $disp->pengaduan->nomor_tiket }}
+                            </a>
+                            <small class="text-[10px] text-gray-400">{{ $disp->created_at->diffForHumans() }}</small>
+                        </div>
+                        <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ $disp->pengaduan->nama_korban }}</p>
+                        <p class="text-xs text-gray-500">Prioritas: <span class="font-medium {{ $disp->prioritas === 'sangat_mendesak' ? 'text-error-600' : ($disp->prioritas === 'penting' ? 'text-warning-600' : '') }}">{{ $disp->labelPrioritas() }}</span></p>
+                        <p class="mt-1 text-xs text-gray-500">Dari: {{ $disp->dariUser->name }}</p>
+                    </div>
+                @empty
+                    <div class="empty-state">Belum ada disposisi masuk.</div>
+                @endforelse
+                @if($disposisiMasuk->isNotEmpty())
+                    <a href="{{ route('admin.disposisi.index') }}" class="text-sm font-medium text-brand-500 hover:underline">Lihat semua disposisi</a>
+                @endif
+            </div>
+        </section>
+        <section class="panel col-span-12 lg:col-span-7">
             <div class="panel-header">
                 <div>
                     <h3 class="panel-title text-emerald-600 dark:text-emerald-400">Atensi Kasus Urgensi Tinggi</h3>

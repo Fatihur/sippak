@@ -41,7 +41,7 @@ class PublicPageController extends Controller
             'kasusDiproses' => (clone $base)->whereIn('status', ['diterima', 'asesmen_awal', 'dalam_penanganan', 'pendampingan', 'dirujuk'])->count(),
             'kasusSelesai' => (clone $base)->where('status', 'selesai')->count(),
             'kasusBulanIni' => (clone $base)->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
-            'trenBulanan' => (clone $base)->selectRaw('MONTH(created_at) as bulan, count(*) as total')
+            'trenBulanan' => (clone $base)->selectRaw('CAST(strftime(\'%m\', created_at) AS INTEGER) as bulan, count(*) as total')
                 ->whereYear('created_at', now()->year)
                 ->groupBy('bulan')
                 ->orderBy('bulan')
