@@ -23,7 +23,7 @@ class DashboardController extends Controller
         $perStatus = Pengaduan::selectRaw('status, count(*) as total')->whereNotNull('nomor_tiket')->groupBy('status')->pluck('total', 'status');
         $perJenis = Pengaduan::selectRaw('jenis_kekerasan, count(*) as total')->whereNotNull('nomor_tiket')->groupBy('jenis_kekerasan')->pluck('total', 'jenis_kekerasan');
         $perWilayah = Pengaduan::selectRaw('coalesce(kecamatan, "Tidak Diisi") as wilayah, count(*) as total')->whereNotNull('nomor_tiket')->groupBy('wilayah')->pluck('total', 'wilayah');
-        $trenBulananRaw = Pengaduan::selectRaw('CAST(strftime(\'%m\', created_at) AS INTEGER) as bulan, count(*) as total')
+        $trenBulananRaw = Pengaduan::selectRaw('MONTH(created_at) as bulan, count(*) as total')
             ->whereNotNull('nomor_tiket')
             ->whereYear('created_at', now()->year)
             ->groupBy('bulan')
