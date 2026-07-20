@@ -83,7 +83,7 @@ class DisposisiController extends Controller
 
         $data = $request->validate([
             'tujuan_kabid' => ['required', 'exists:users,id'],
-            'prioritas' => ['required', 'in:biasa, penting, sangat_mendesak'],
+            'prioritas' => ['required', 'in:biasa,penting,sangat_mendesak'],
             'instruksi' => ['required', 'string'],
         ]);
 
